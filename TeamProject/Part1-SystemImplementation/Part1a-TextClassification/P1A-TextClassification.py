@@ -2,12 +2,15 @@ import tensorflow as tf
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import accuracy_score
+
+################################### Dataset ##########################################
 
 # Dataset has 15 classes (dialog acts)
     
 # We want to read the dalog_acts.dat file. The first word of every line is the class label and the rest of the line is the text.
-
 df = pd.read_csv('C:/Users/nikol/OneDrive/Desktop/UU/Period-1/Methods-in-AI/MAIR-30/TeamProject/Part1-SystemImplementation/Part1a-TextClassification/dialog_acts.dat', header=None, names=['data'])
 
 # Apply the function to split the 'data' column into 'label' and 'text' columns
@@ -36,6 +39,32 @@ x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.15, random
 # print(y_train.head(15))
 # print(x_test.head(85))
 # print(y_test.head(15))
+
+# Deduplicate both our training and test sets from duplicate utterances
+train_unique_df = pd.DataFrame({'text': x_train, 'label': y_train}).drop_duplicates(subset=['text'])
+test_unique_df = pd.DataFrame({'text': x_test, 'label': y_test}).drop_duplicates(subset=['text'])
+
+# Split the DataFrames
+x_train_unique = train_unique_df['text']
+y_train_unique = train_unique_df['label']
+
+x_test_unique = test_unique_df['text']
+y_test_unique = test_unique_df['label']
+
+# Scikit needs numpy
+x_train_unique_np = x_train_unique.values
+y_train_unique_np = y_train_unique.values
+
+x_test_unique_np = x_test_unique.values
+y_test_unique_np = y_test_unique.values
+
+# Display the first 15 rows of each DataFrame
+# print(x_train_unique_df.head(15))
+# print(y_train_unique_df.head(15))
+# print(x_test_unique_df.head(15))
+# print(y_test_unique_df.head(15))
+
+################################### Dataset ##########################################
 
 ####################### Baseline majority class (inform label) #######################
 # Identify the majority class (idk if its needed)
@@ -110,13 +139,52 @@ def baseline_prompt(rules):
         print(f"Predicted dialog act label: {predicted_label}")
 ############################## Baseline prompt predictions #############################
 
+############################## ML Decision Tree Classifier #############################
+
+# For out-of-vocabulary words we don't have to do anything since the CountVectorizer will ignore them
+def ml_decision_tree_classifier(x_train, y_train, x_test, y_test):
+
+    # Transforming the data
+    vectorizer = CountVectorizer()
+    x_train_bow = vectorizer.fit_transform(x_train)
+    x_test_bow = vectorizer.transform(x_test)
+    
+    clf = DecisionTreeClassifier(random_state=0)
+    clf.fit(x_train_bow, y_train)
+
+    y_pred = clf.predict(x_test_bow)
+
+    accuracy = accuracy_score(y_test, y_pred)
+    
+    return f"Decision Tree Classifier Accuracy: {accuracy * 100:.2f}%"
+
+def ml_decision_tree_classifier_prompt(x_train, y_train):
+
+    vectorizer = CountVectorizer()
+    x_train_bow = vectorizer.fit_transform(x_train)
+    clf = DecisionTreeClassifier(random_state=0)
+    clf.fit(x_train_bow, y_train)
+    
+    while True:
+        utterance = input("Please enter utterance to be classified (Type 'exit' to go back): ")
+        if utterance == 'exit':
+            print("Exiting...")
+            break
+        
+        utterance_bow = vectorizer.transform([utterance])
+        predicted_label = clf.predict(utterance_bow)[0]
+        
+        print(f"Predicted dialog act label: {predicted_label}")
+
+############################## ML Decision Tree Classifier #############################
+
 def main_menu():
     while True:
         print("\nChoose an option:")
         print("1. Run Baseline Majority Class")
         print("2. Run Baseline Keyword Matching")
         print("3. Run Baseline Prompt Predictions")
-        print("4. Run ML algorithm")
+        print("4. Run ML Decision Tree Classifier Algorithm")
         print("0. Exit")
 
         choice = input("Enter your choice: ")
@@ -130,7 +198,12 @@ def main_menu():
         elif choice == '3':
             baseline_prompt(rules)
         elif choice == '4':
-            print("ML algorithm")
+            ml_decision_tree_classifier_accuracy_dups = ml_decision_tree_classifier(x_train, y_train, x_test, y_test)
+            print(f"Machine Learing Decision Tree Classifier accuracy (with Duplicates): {ml_decision_tree_classifier_accuracy_dups}")
+            ml_decision_tree_classifier_accuracy_nodups = ml_decision_tree_classifier(x_train_unique_np, y_train_unique_np, x_test_unique_np, y_test_unique_np)
+            print(f"Machine Learing Decision Tree Classifier accuracy (without Duplicates): {ml_decision_tree_classifier_accuracy_nodups}")
+
+            ml_decision_tree_classifier_prompt(x_train, y_train)
         elif choice == '0':
             print("Exiting...")
             break
