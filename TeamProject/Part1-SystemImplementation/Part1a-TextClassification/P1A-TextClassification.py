@@ -54,6 +54,49 @@ print(f"Baseline majority accuracy: {baseline_majority_accuracy}")
 
 ############################## Baseline keyword matching #############################
 
+def baseline_keyword(x_test, y_test):
 
+    # The order of the rules plays a big role in the accuracy
+    # I tried to put the class labels first that appear the most times in the dataset. (Hence is makes sense to have inform as first rule)
+    rules = {
+        # I put thank you first because in the text whenever theres thank you and bye at the same sentence
+        # it will always be thankyou
+        'inform': ['any', 'im looking'],
+        'request': ['phone', 'address', 'postcode', 'post code', 'type of food', 'what', 'whats'],
+        'thankyou': ['thank you'],
+        'ack': ['okay','ok'],
+        'affirm': ['yes', 'right', 'yeah'],
+        'bye': ['good bye','bye'],
+        'deny': ['wrong','not', 'dont'],
+        'hello': ['hello', 'hi'],
+        'negate': ['no'],
+        'repeat': ['repeat', 'again', 'back'],
+        'reqalts': ['is there', 'how about', 'anything else', 'what about'],
+        'confirm': ['is it', 'does it'],
+        'reqmore': ['more'],
+        'restart': ['reset', 'start over', 'start again'],
+        'null': ['cough', 'unintelligible', 'tv_noise', 'noise', 'sil', 'none']
+    }
+
+    y_pred = []
+
+    for utterance in x_test:
+        # Our default label is the inform label since it appears the most times
+        predicted_label = 'inform'
+        for label, keywords in rules.items():
+            if any(keyword in utterance for keyword in keywords):
+                predicted_label = label
+                break
+        y_pred.append(predicted_label)
+
+    # Calculate the accuracy from the predictions
+    total_instances = len(y_test)
+    correct_predictions = (y_test == y_pred).sum()
+    accuracy = (correct_predictions / total_instances) * 100
+
+    return f"{accuracy:.2f}%"
+
+baseline_keyword_accuracy = baseline_keyword(x_test, y_test)
+print(f"Baseline keyword accuracy: {baseline_keyword_accuracy}")
 
 ############################## Baseline keyword matching #############################
