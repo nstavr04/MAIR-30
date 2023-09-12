@@ -54,29 +54,29 @@ print(f"Baseline majority accuracy: {baseline_majority_accuracy}")
 
 ############################## Baseline keyword matching #############################
 
-def baseline_keyword(x_test, y_test):
+# The order of the rules plays a big role in the accuracy
+# I tried to put the class labels first that appear the most times in the dataset. (Hence is makes sense to have inform as first rule)
+rules = {
+    # I put thank you first because in the text whenever theres thank you and bye at the same sentence
+    # it will always be thankyou
+    'inform': ['any', 'im looking'],
+    'request': ['phone', 'address', 'postcode', 'post code', 'type of food', 'what', 'whats'],
+    'thankyou': ['thank you'],
+    'ack': ['okay','ok'],
+    'affirm': ['yes', 'right', 'yeah'],
+    'bye': ['good bye','bye'],
+    'deny': ['wrong','not', 'dont'],
+    'hello': ['hello', 'hi'],
+    'negate': ['no'],
+    'repeat': ['repeat', 'again', 'back'],
+    'reqalts': ['is there', 'how about', 'anything else', 'what about'],
+    'confirm': ['is it', 'does it'],
+    'reqmore': ['more'],
+    'restart': ['reset', 'start over', 'start again'],
+    'null': ['cough', 'unintelligible', 'tv_noise', 'noise', 'sil', 'none']
+}
 
-    # The order of the rules plays a big role in the accuracy
-    # I tried to put the class labels first that appear the most times in the dataset. (Hence is makes sense to have inform as first rule)
-    rules = {
-        # I put thank you first because in the text whenever theres thank you and bye at the same sentence
-        # it will always be thankyou
-        'inform': ['any', 'im looking'],
-        'request': ['phone', 'address', 'postcode', 'post code', 'type of food', 'what', 'whats'],
-        'thankyou': ['thank you'],
-        'ack': ['okay','ok'],
-        'affirm': ['yes', 'right', 'yeah'],
-        'bye': ['good bye','bye'],
-        'deny': ['wrong','not', 'dont'],
-        'hello': ['hello', 'hi'],
-        'negate': ['no'],
-        'repeat': ['repeat', 'again', 'back'],
-        'reqalts': ['is there', 'how about', 'anything else', 'what about'],
-        'confirm': ['is it', 'does it'],
-        'reqmore': ['more'],
-        'restart': ['reset', 'start over', 'start again'],
-        'null': ['cough', 'unintelligible', 'tv_noise', 'noise', 'sil', 'none']
-    }
+def baseline_keyword(x_test, y_test, rules):
 
     y_pred = []
 
@@ -96,7 +96,29 @@ def baseline_keyword(x_test, y_test):
 
     return f"{accuracy:.2f}%"
 
-baseline_keyword_accuracy = baseline_keyword(x_test, y_test)
+baseline_keyword_accuracy = baseline_keyword(x_test, y_test, rules)
 print(f"Baseline keyword accuracy: {baseline_keyword_accuracy}")
 
 ############################## Baseline keyword matching #############################
+
+############################## Baseline prompt predictions #############################
+
+def baseline_prompt(rules):
+
+    while True:
+        utterance = input("Please enter utterance to be classified: ")
+        if utterance == 'exit':
+            print("Exiting...")
+            break
+
+        predicted_label = 'inform'
+        for label, keywords in rules.items():
+            if any(keyword in utterance for keyword in keywords):
+                predicted_label = label
+                break
+
+        print(f"Predicted dialog act label: {predicted_label}")
+
+baseline_prompt(rules)
+
+############################## Baseline prompt predictions #############################
