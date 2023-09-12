@@ -4,6 +4,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 
 ################################### Dataset ##########################################
@@ -178,6 +179,44 @@ def ml_decision_tree_classifier_prompt(x_train, y_train):
 
 ############################## ML Decision Tree Classifier #############################
 
+########################### ML Logistic Regression Classifier ##########################
+
+def ml_logistic_regression_classifier(x_train, y_train, x_test, y_test):
+
+    vectorizer = CountVectorizer()
+    x_train_bow = vectorizer.fit_transform(x_train)
+    x_test_bow = vectorizer.transform(x_test)
+    
+    clf = LogisticRegression(random_state=0, max_iter=1000)
+    clf.fit(x_train_bow, y_train)
+    
+    y_pred = clf.predict(x_test_bow)
+    
+    accuracy = accuracy_score(y_test, y_pred)
+    
+    return f"Logistic Regression Classifier Accuracy: {accuracy * 100:.2f}%"
+
+def ml_logistic_regression_classifier_prompt(x_train, y_train):
+
+    vectorizer = CountVectorizer()
+    x_train_bow = vectorizer.fit_transform(x_train)
+    
+    clf = LogisticRegression(random_state=0, max_iter=1000)
+    clf.fit(x_train_bow, y_train)
+    
+    while True:
+        utterance = input("Please enter utterance to be classified (Type 'exit' to go back): ")
+        if utterance == 'exit':
+            print("Exiting...")
+            break
+        
+        utterance_bow = vectorizer.transform([utterance])
+        predicted_label = clf.predict(utterance_bow)[0]
+        
+        print(f"Predicted dialog act label: {predicted_label}")
+
+########################### ML Logistic Regression Classifier ##########################
+
 def main_menu():
     while True:
         print("\nChoose an option:")
@@ -185,6 +224,8 @@ def main_menu():
         print("2. Run Baseline Keyword Matching")
         print("3. Run Baseline Prompt Predictions")
         print("4. Run ML Decision Tree Classifier Algorithm")
+        print("5. Run ML Logistic Regression Classifier Algorithm")
+        print("6. Run everything")
         print("0. Exit")
 
         choice = input("Enter your choice: ")
@@ -204,6 +245,26 @@ def main_menu():
             print(f"Machine Learing Decision Tree Classifier accuracy (without Duplicates): {ml_decision_tree_classifier_accuracy_nodups}")
 
             ml_decision_tree_classifier_prompt(x_train, y_train)
+        elif choice == '5':
+            ml_logistic_regression_classifier_accuracy_dups = ml_logistic_regression_classifier(x_train, y_train, x_test, y_test)
+            print(f"Machine Learing Logistic Regression Classifier accuracy (with Duplicates): {ml_logistic_regression_classifier_accuracy_dups}")
+            ml_logistic_regression_classifier_accuracy_nodups = ml_logistic_regression_classifier(x_train_unique_np, y_train_unique_np, x_test_unique_np, y_test_unique_np)
+            print(f"Machine Learing Logistic Regression Classifier accuracy (without Duplicates): {ml_logistic_regression_classifier_accuracy_nodups}")
+
+            ml_logistic_regression_classifier_prompt(x_train, y_train)
+        elif choice == '6':
+            baseline_majority_accuracy = baseline_majority(y_test)
+            print(f"Baseline majority accuracy: {baseline_majority_accuracy}")
+            baseline_keyword_accuracy = baseline_keyword(x_test, y_test, rules)
+            print(f"Baseline keyword accuracy: {baseline_keyword_accuracy}")
+            ml_decision_tree_classifier_accuracy_dups = ml_decision_tree_classifier(x_train, y_train, x_test, y_test)
+            print(f"Machine Learing Decision Tree Classifier accuracy (with Duplicates): {ml_decision_tree_classifier_accuracy_dups}")
+            ml_decision_tree_classifier_accuracy_nodups = ml_decision_tree_classifier(x_train_unique_np, y_train_unique_np, x_test_unique_np, y_test_unique_np)
+            print(f"Machine Learing Decision Tree Classifier accuracy (without Duplicates): {ml_decision_tree_classifier_accuracy_nodups}")
+            ml_logistic_regression_classifier_accuracy_dups = ml_logistic_regression_classifier(x_train, y_train, x_test, y_test)
+            print(f"Machine Learing Logistic Regression Classifier accuracy (with Duplicates): {ml_logistic_regression_classifier_accuracy_dups}")
+            ml_logistic_regression_classifier_accuracy_nodups = ml_logistic_regression_classifier(x_train_unique_np, y_train_unique_np, x_test_unique_np, y_test_unique_np)
+            print(f"Machine Learing Logistic Regression Classifier accuracy (without Duplicates): {ml_logistic_regression_classifier_accuracy_nodups}")
         elif choice == '0':
             print("Exiting...")
             break
