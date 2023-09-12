@@ -40,20 +40,15 @@ x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.15, random
 ####################### Baseline majority class (inform label) #######################
 # Identify the majority class (idk if its needed)
 # majority_class = y_train.value_counts().idxmax()
-
 def baseline_majority(y_test, majority_class='inform'):
     total_instances = len(y_test)
     correct_predictions = (y_test == majority_class).sum()
     
     accuracy = (correct_predictions / total_instances) * 100
     return f"{accuracy:.2f}%"
-
-baseline_majority_accuracy = baseline_majority(y_test)
-print(f"Baseline majority accuracy: {baseline_majority_accuracy}")
 ####################### Baseline majority class (inform label) #######################
 
 ############################## Baseline keyword matching #############################
-
 # The order of the rules plays a big role in the accuracy
 # I tried to put the class labels first that appear the most times in the dataset. (Hence is makes sense to have inform as first rule)
 rules = {
@@ -95,18 +90,13 @@ def baseline_keyword(x_test, y_test, rules):
     accuracy = (correct_predictions / total_instances) * 100
 
     return f"{accuracy:.2f}%"
-
-baseline_keyword_accuracy = baseline_keyword(x_test, y_test, rules)
-print(f"Baseline keyword accuracy: {baseline_keyword_accuracy}")
-
 ############################## Baseline keyword matching #############################
 
 ############################## Baseline prompt predictions #############################
-
 def baseline_prompt(rules):
 
     while True:
-        utterance = input("Please enter utterance to be classified: ")
+        utterance = input("Please enter utterance to be classified (Type 'exit' to go back): ")
         if utterance == 'exit':
             print("Exiting...")
             break
@@ -118,7 +108,34 @@ def baseline_prompt(rules):
                 break
 
         print(f"Predicted dialog act label: {predicted_label}")
-
-baseline_prompt(rules)
-
 ############################## Baseline prompt predictions #############################
+
+def main_menu():
+    while True:
+        print("\nChoose an option:")
+        print("1. Run Baseline Majority Class")
+        print("2. Run Baseline Keyword Matching")
+        print("3. Run Baseline Prompt Predictions")
+        print("4. Run ML algorithm")
+        print("0. Exit")
+
+        choice = input("Enter your choice: ")
+
+        if choice == '1':
+            baseline_majority_accuracy = baseline_majority(y_test)
+            print(f"Baseline majority accuracy: {baseline_majority_accuracy}")
+        elif choice == '2':
+            baseline_keyword_accuracy = baseline_keyword(x_test, y_test, rules)
+            print(f"Baseline keyword accuracy: {baseline_keyword_accuracy}")
+        elif choice == '3':
+            baseline_prompt(rules)
+        elif choice == '4':
+            print("ML algorithm")
+        elif choice == '0':
+            print("Exiting...")
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
+if __name__ == "__main__":
+    main_menu()
