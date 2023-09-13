@@ -49,10 +49,10 @@ y_train_unique_np = y_train_unique.values
 x_test_unique_np = x_test_unique.values
 y_test_unique_np = y_test_unique.values
 
-print(x_train_unique_np.shape)
-print(x_test_unique_np.shape)
-print(y_train_unique_np.shape)
-print(y_test_unique_np.shape)
+# print(x_train_unique_np.shape)
+# print(x_test_unique_np.shape)
+# print(y_train_unique_np.shape)
+# print(y_test_unique_np.shape)
 
 ################################### Dataset ##########################################
 
