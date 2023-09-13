@@ -21,36 +21,26 @@ df[['label', 'text']] = df['data'].apply(lambda x: pd.Series(x.split(' ', 1)))
 df.drop('data', axis=1, inplace=True)
 
 # print(df.head(10))
+df_deduplicated = df.drop_duplicates(subset=['text'])
 
 # Features and Labels
 x = df['text']
 y = df['label']
+
+x_deduplicated = df_deduplicated['text']
+y_deduplicated = df_deduplicated['label']
 
 # Splitting the dataset into training and test sets
 # 85% of the data is used for training and 15% for testing
 # random state is like seed I think to just keep the same split and shuffling
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.15, random_state=10, shuffle=True)
 
+x_train_unique, x_test_unique, y_train_unique, y_test_unique = train_test_split(x_deduplicated, y_deduplicated, test_size=0.15, random_state=10, shuffle=True)
+
 # print(x_train.shape)
 # print(x_test.shape)
 # print(y_train.shape)
 # print(y_test.shape)
-
-# print(x_train.head(85))
-# print(y_train.head(15))
-# print(x_test.head(85))
-# print(y_test.head(15))
-
-# Deduplicate both our training and test sets from duplicate utterances
-train_unique_df = pd.DataFrame({'text': x_train, 'label': y_train}).drop_duplicates(subset=['text'])
-test_unique_df = pd.DataFrame({'text': x_test, 'label': y_test}).drop_duplicates(subset=['text'])
-
-# Split the DataFrames
-x_train_unique = train_unique_df['text']
-y_train_unique = train_unique_df['label']
-
-x_test_unique = test_unique_df['text']
-y_test_unique = test_unique_df['label']
 
 # Scikit needs numpy
 x_train_unique_np = x_train_unique.values
@@ -59,11 +49,10 @@ y_train_unique_np = y_train_unique.values
 x_test_unique_np = x_test_unique.values
 y_test_unique_np = y_test_unique.values
 
-# Display the first 15 rows of each DataFrame
-# print(x_train_unique_df.head(15))
-# print(y_train_unique_df.head(15))
-# print(x_test_unique_df.head(15))
-# print(y_test_unique_df.head(15))
+print(x_train_unique_np.shape)
+print(x_test_unique_np.shape)
+print(y_train_unique_np.shape)
+print(y_test_unique_np.shape)
 
 ################################### Dataset ##########################################
 
