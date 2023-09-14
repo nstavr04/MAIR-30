@@ -211,7 +211,7 @@ def main_menu():
         print("\nChoose an option:")
         print("1. Run Baseline Majority Class")
         print("2. Run Baseline Keyword Matching")
-        print("3. Run Baseline Prompt Predictions")
+        print("3. Run Baseline Keyword Matching Prompt Predictions")
         print("4. Run ML Decision Tree Classifier Algorithm (with Duplicates)")
         print("5. Run ML Decision Tree Classifier Algorithm (without Duplicates)")
         print("6. Run ML Logistic Regression Classifier Algorithm (with Duplicates)")
