@@ -7,6 +7,8 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+import matplotlib.pyplot as plt
 
 ################################### Dataset ##########################################
 
@@ -34,9 +36,9 @@ y_deduplicated = df_deduplicated['label']
 # Splitting the dataset into training and test sets
 # 85% of the data is used for training and 15% for testing
 # random state is like seed I think to just keep the same split and shuffling
-x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.15, random_state=10, shuffle=True)
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.15, random_state=11, shuffle=True)
 
-x_train_unique, x_test_unique, y_train_unique, y_test_unique = train_test_split(x_deduplicated, y_deduplicated, test_size=0.15, random_state=10, shuffle=True)
+x_train_unique, x_test_unique, y_train_unique, y_test_unique = train_test_split(x_deduplicated, y_deduplicated, test_size=0.15, random_state=11, shuffle=True)
 
 # print(x_train.shape)
 # print(x_test.shape)
@@ -148,6 +150,11 @@ def ml_decision_tree_classifier(x_train, y_train, x_test, y_test):
     clf.fit(x_train_bow, y_train)
 
     y_pred = clf.predict(x_test_bow)
+
+    # cm = confusion_matrix(y_test, y_pred, labels=clf.classes_)
+    # disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=clf.classes_)
+    # disp.plot()
+    # plt.show()
 
     accuracy = accuracy_score(y_test, y_pred)
     c_report = classification_report(y_test, y_pred, zero_division=0)
