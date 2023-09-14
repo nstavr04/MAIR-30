@@ -212,9 +212,11 @@ def main_menu():
         print("1. Run Baseline Majority Class")
         print("2. Run Baseline Keyword Matching")
         print("3. Run Baseline Prompt Predictions")
-        print("4. Run ML Decision Tree Classifier Algorithm")
-        print("5. Run ML Logistic Regression Classifier Algorithm")
-        print("6. Run everything")
+        print("4. Run ML Decision Tree Classifier Algorithm (with Duplicates)")
+        print("5. Run ML Decision Tree Classifier Algorithm (without Duplicates)")
+        print("6. Run ML Logistic Regression Classifier Algorithm (with Duplicates)")
+        print("7. Run ML Logistic Regression Classifier Algorithm (without Duplicates)")
+        print("8. Run everything")
         print("0. Exit")
 
         choice = input("Enter your choice: ")
@@ -230,18 +232,24 @@ def main_menu():
         elif choice == '4':
             ml_decision_tree_classifier_accuracy_dups = ml_decision_tree_classifier(x_train, y_train, x_test, y_test)
             print(f"Machine Learing Decision Tree Classifier accuracy (with Duplicates): {ml_decision_tree_classifier_accuracy_dups}")
+            
+            ml_decision_tree_classifier_prompt(x_train, y_train)
+        elif choice == '5':
             ml_decision_tree_classifier_accuracy_nodups = ml_decision_tree_classifier(x_train_unique_np, y_train_unique_np, x_test_unique_np, y_test_unique_np)
             print(f"Machine Learing Decision Tree Classifier accuracy (without Duplicates): {ml_decision_tree_classifier_accuracy_nodups}")
 
-            ml_decision_tree_classifier_prompt(x_train, y_train)
-        elif choice == '5':
+            ml_decision_tree_classifier_prompt(x_train_unique_np, y_train_unique_np)
+        elif choice == '6':
             ml_logistic_regression_classifier_accuracy_dups = ml_logistic_regression_classifier(x_train, y_train, x_test, y_test)
             print(f"Machine Learing Logistic Regression Classifier accuracy (with Duplicates): {ml_logistic_regression_classifier_accuracy_dups}")
+            
+            ml_logistic_regression_classifier_prompt(x_train, y_train)
+        elif choice == '7':
             ml_logistic_regression_classifier_accuracy_nodups = ml_logistic_regression_classifier(x_train_unique_np, y_train_unique_np, x_test_unique_np, y_test_unique_np)
             print(f"Machine Learing Logistic Regression Classifier accuracy (without Duplicates): {ml_logistic_regression_classifier_accuracy_nodups}")
 
-            ml_logistic_regression_classifier_prompt(x_train, y_train)
-        elif choice == '6':
+            ml_logistic_regression_classifier_prompt(x_train_unique_np, y_train_unique_np)
+        elif choice == '8':
             baseline_majority_accuracy = baseline_majority(y_test)
             print(f"Baseline majority accuracy: {baseline_majority_accuracy}")
             baseline_keyword_accuracy = baseline_keyword(x_test, y_test, rules)
