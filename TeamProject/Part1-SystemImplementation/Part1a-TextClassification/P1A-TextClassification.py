@@ -66,6 +66,15 @@ def baseline_majority(y_test, majority_class='inform'):
     total_instances = len(y_test)
     correct_predictions = (y_test == majority_class).sum()
     
+    # y_pred_baseline = np.full((total_instances), majority_class)
+    # unique_labels = np.unique(y_test)
+
+    # cm = confusion_matrix(y_test, y_pred_baseline, labels=unique_labels)
+    # disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=unique_labels)
+    # disp.plot()
+    # plt.title("Baseline Majority Class Confusion Matrix")
+    # plt.show()
+
     accuracy = (correct_predictions / total_instances) * 100
     c_report = classification_report(y_test, [majority_class] * total_instances, zero_division=0)
 
@@ -112,6 +121,14 @@ def baseline_keyword(x_test, y_test, rules):
     total_instances = len(y_test)
     correct_predictions = (y_test == y_pred).sum()
 
+    # unique_labels = np.unique(y_test)
+
+    # cm = confusion_matrix(y_test, y_pred, labels=unique_labels)
+    # disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=unique_labels)
+    # disp.plot()
+    # plt.title("Baseline Keyword Matching Confusion Matrix")
+    # plt.show()
+
     accuracy = (correct_predictions / total_instances) * 100
     c_report = classification_report(y_test, y_pred, zero_division=0)
 
@@ -154,6 +171,7 @@ def ml_decision_tree_classifier(x_train, y_train, x_test, y_test):
     # cm = confusion_matrix(y_test, y_pred, labels=clf.classes_)
     # disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=clf.classes_)
     # disp.plot()
+    # plt.title("ML Decision Tree Confusion Matrix (no Duplicates)")
     # plt.show()
 
     accuracy = accuracy_score(y_test, y_pred)
@@ -194,6 +212,12 @@ def ml_logistic_regression_classifier(x_train, y_train, x_test, y_test):
     
     y_pred = clf.predict(x_test_bow)
     
+    # cm = confusion_matrix(y_test, y_pred, labels=clf.classes_)
+    # disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=clf.classes_)
+    # disp.plot()
+    # plt.title("ML Logistic Regression Confusion Matrix (no Duplicates)")
+    # plt.show()
+
     accuracy = accuracy_score(y_test, y_pred)
     c_report = classification_report(y_test, y_pred, zero_division=0)
 
