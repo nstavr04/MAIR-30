@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 # Dataset has 15 classes (dialog acts)
     
 # We want to read the dalog_acts.dat file. The first word of every line is the class label and the rest of the line is the text.
+# Change accordingly, my computer does not work for relative paths
 df = pd.read_csv('C:/Users/nikol/OneDrive/Desktop/UU/Period-1/Methods-in-AI/MAIR-30/TeamProject/Part1-SystemImplementation/Part1a-TextClassification/dialog_acts.dat', header=None, names=['data'])
 
 # Apply the function to split the 'data' column into 'label' and 'text' columns
