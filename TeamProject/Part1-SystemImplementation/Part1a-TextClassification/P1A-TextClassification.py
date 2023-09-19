@@ -1,4 +1,3 @@
-import tensorflow as tf
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -6,13 +5,17 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+import matplotlib.pyplot as plt
 
 ################################### Dataset ##########################################
 
 # Dataset has 15 classes (dialog acts)
     
 # We want to read the dalog_acts.dat file. The first word of every line is the class label and the rest of the line is the text.
-df = pd.read_csv('C:/Users/nikol/OneDrive/Desktop/UU/Period-1/Methods-in-AI/MAIR-30/TeamProject/Part1-SystemImplementation/Part1a-TextClassification/dialog_acts.dat', header=None, names=['data'])
+# Change accordingly, my computer does not work for relative paths
+df = pd.read_csv('dialog_acts.dat', names=['data'])
 
 # Apply the function to split the 'data' column into 'label' and 'text' columns
 df[['label', 'text']] = df['data'].apply(lambda x: pd.Series(x.split(' ', 1)))
@@ -21,36 +24,26 @@ df[['label', 'text']] = df['data'].apply(lambda x: pd.Series(x.split(' ', 1)))
 df.drop('data', axis=1, inplace=True)
 
 # print(df.head(10))
+df_deduplicated = df.drop_duplicates(subset=['text'])
 
 # Features and Labels
 x = df['text']
 y = df['label']
 
+x_deduplicated = df_deduplicated['text']
+y_deduplicated = df_deduplicated['label']
+
 # Splitting the dataset into training and test sets
 # 85% of the data is used for training and 15% for testing
 # random state is like seed I think to just keep the same split and shuffling
-x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.15, random_state=10, shuffle=True)
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.15, random_state=11, shuffle=True)
+
+x_train_unique, x_test_unique, y_train_unique, y_test_unique = train_test_split(x_deduplicated, y_deduplicated, test_size=0.15, random_state=11, shuffle=True)
 
 # print(x_train.shape)
 # print(x_test.shape)
 # print(y_train.shape)
 # print(y_test.shape)
-
-# print(x_train.head(85))
-# print(y_train.head(15))
-# print(x_test.head(85))
-# print(y_test.head(15))
-
-# Deduplicate both our training and test sets from duplicate utterances
-train_unique_df = pd.DataFrame({'text': x_train, 'label': y_train}).drop_duplicates(subset=['text'])
-test_unique_df = pd.DataFrame({'text': x_test, 'label': y_test}).drop_duplicates(subset=['text'])
-
-# Split the DataFrames
-x_train_unique = train_unique_df['text']
-y_train_unique = train_unique_df['label']
-
-x_test_unique = test_unique_df['text']
-y_test_unique = test_unique_df['label']
 
 # Scikit needs numpy
 x_train_unique_np = x_train_unique.values
@@ -59,11 +52,10 @@ y_train_unique_np = y_train_unique.values
 x_test_unique_np = x_test_unique.values
 y_test_unique_np = y_test_unique.values
 
-# Display the first 15 rows of each DataFrame
-# print(x_train_unique_df.head(15))
-# print(y_train_unique_df.head(15))
-# print(x_test_unique_df.head(15))
-# print(y_test_unique_df.head(15))
+# print(x_train_unique_np.shape)
+# print(x_test_unique_np.shape)
+# print(y_train_unique_np.shape)
+# print(y_test_unique_np.shape)
 
 ################################### Dataset ##########################################
 
@@ -74,8 +66,19 @@ def baseline_majority(y_test, majority_class='inform'):
     total_instances = len(y_test)
     correct_predictions = (y_test == majority_class).sum()
     
+    # y_pred_baseline = np.full((total_instances), majority_class)
+    # unique_labels = np.unique(y_test)
+
+    # cm = confusion_matrix(y_test, y_pred_baseline, labels=unique_labels)
+    # disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=unique_labels)
+    # disp.plot()
+    # plt.title("Baseline Majority Class Confusion Matrix")
+    # plt.show()
+
     accuracy = (correct_predictions / total_instances) * 100
-    return f"{accuracy:.2f}%"
+    c_report = classification_report(y_test, [majority_class] * total_instances, zero_division=0)
+
+    return accuracy, c_report
 ####################### Baseline majority class (inform label) #######################
 
 ############################## Baseline keyword matching #############################
@@ -117,9 +120,19 @@ def baseline_keyword(x_test, y_test, rules):
     # Calculate the accuracy from the predictions
     total_instances = len(y_test)
     correct_predictions = (y_test == y_pred).sum()
-    accuracy = (correct_predictions / total_instances) * 100
 
-    return f"{accuracy:.2f}%"
+    # unique_labels = np.unique(y_test)
+
+    # cm = confusion_matrix(y_test, y_pred, labels=unique_labels)
+    # disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=unique_labels)
+    # disp.plot()
+    # plt.title("Baseline Keyword Matching Confusion Matrix")
+    # plt.show()
+
+    accuracy = (correct_predictions / total_instances) * 100
+    c_report = classification_report(y_test, y_pred, zero_division=0)
+
+    return accuracy, c_report
 ############################## Baseline keyword matching #############################
 
 ############################## Baseline prompt predictions #############################
@@ -155,9 +168,16 @@ def ml_decision_tree_classifier(x_train, y_train, x_test, y_test):
 
     y_pred = clf.predict(x_test_bow)
 
+    # cm = confusion_matrix(y_test, y_pred, labels=clf.classes_)
+    # disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=clf.classes_)
+    # disp.plot()
+    # plt.title("ML Decision Tree Confusion Matrix (no Duplicates)")
+    # plt.show()
+
     accuracy = accuracy_score(y_test, y_pred)
-    
-    return f"Decision Tree Classifier Accuracy: {accuracy * 100:.2f}%"
+    c_report = classification_report(y_test, y_pred, zero_division=0)
+
+    return accuracy * 100, c_report
 
 def ml_decision_tree_classifier_prompt(x_train, y_train):
 
@@ -192,9 +212,16 @@ def ml_logistic_regression_classifier(x_train, y_train, x_test, y_test):
     
     y_pred = clf.predict(x_test_bow)
     
+    # cm = confusion_matrix(y_test, y_pred, labels=clf.classes_)
+    # disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=clf.classes_)
+    # disp.plot()
+    # plt.title("ML Logistic Regression Confusion Matrix (no Duplicates)")
+    # plt.show()
+
     accuracy = accuracy_score(y_test, y_pred)
-    
-    return f"Logistic Regression Classifier Accuracy: {accuracy * 100:.2f}%"
+    c_report = classification_report(y_test, y_pred, zero_division=0)
+
+    return accuracy * 100, c_report
 
 def ml_logistic_regression_classifier_prompt(x_train, y_train):
 
@@ -222,49 +249,63 @@ def main_menu():
         print("\nChoose an option:")
         print("1. Run Baseline Majority Class")
         print("2. Run Baseline Keyword Matching")
-        print("3. Run Baseline Prompt Predictions")
-        print("4. Run ML Decision Tree Classifier Algorithm")
-        print("5. Run ML Logistic Regression Classifier Algorithm")
-        print("6. Run everything")
+        print("3. Run Baseline Keyword Matching Prompt Predictions")
+        print("4. Run ML Decision Tree Classifier Algorithm (with Duplicates)")
+        print("5. Run ML Decision Tree Classifier Algorithm (without Duplicates)")
+        print("6. Run ML Logistic Regression Classifier Algorithm (with Duplicates)")
+        print("7. Run ML Logistic Regression Classifier Algorithm (without Duplicates)")
+        print("8. Run everything - Classification Reports")
         print("0. Exit")
 
         choice = input("Enter your choice: ")
 
         if choice == '1':
-            baseline_majority_accuracy = baseline_majority(y_test)
-            print(f"Baseline majority accuracy: {baseline_majority_accuracy}")
+            baseline_majority_accuracy, c_report = baseline_majority(y_test)
+            print(f"Baseline majority accuracy: {baseline_majority_accuracy:.2f}%")
         elif choice == '2':
-            baseline_keyword_accuracy = baseline_keyword(x_test, y_test, rules)
-            print(f"Baseline keyword accuracy: {baseline_keyword_accuracy}")
+            baseline_keyword_accuracy, c_report = baseline_keyword(x_test, y_test, rules)
+            print(f"Baseline keyword accuracy: {baseline_keyword_accuracy:.2f}%")
         elif choice == '3':
             baseline_prompt(rules)
         elif choice == '4':
-            ml_decision_tree_classifier_accuracy_dups = ml_decision_tree_classifier(x_train, y_train, x_test, y_test)
-            print(f"Machine Learing Decision Tree Classifier accuracy (with Duplicates): {ml_decision_tree_classifier_accuracy_dups}")
-            ml_decision_tree_classifier_accuracy_nodups = ml_decision_tree_classifier(x_train_unique_np, y_train_unique_np, x_test_unique_np, y_test_unique_np)
-            print(f"Machine Learing Decision Tree Classifier accuracy (without Duplicates): {ml_decision_tree_classifier_accuracy_nodups}")
+            ml_decision_tree_classifier_accuracy_dups, c_report = ml_decision_tree_classifier(x_train, y_train, x_test, y_test)
+            print(f"Machine Learing Decision Tree Classifier accuracy (with Duplicates): {ml_decision_tree_classifier_accuracy_dups:.2f}%")
 
             ml_decision_tree_classifier_prompt(x_train, y_train)
         elif choice == '5':
-            ml_logistic_regression_classifier_accuracy_dups = ml_logistic_regression_classifier(x_train, y_train, x_test, y_test)
-            print(f"Machine Learing Logistic Regression Classifier accuracy (with Duplicates): {ml_logistic_regression_classifier_accuracy_dups}")
-            ml_logistic_regression_classifier_accuracy_nodups = ml_logistic_regression_classifier(x_train_unique_np, y_train_unique_np, x_test_unique_np, y_test_unique_np)
-            print(f"Machine Learing Logistic Regression Classifier accuracy (without Duplicates): {ml_logistic_regression_classifier_accuracy_nodups}")
+            ml_decision_tree_classifier_accuracy_nodups, c_report = ml_decision_tree_classifier(x_train_unique_np, y_train_unique_np, x_test_unique_np, y_test_unique_np)
+            print(f"Machine Learing Decision Tree Classifier accuracy (without Duplicates): {ml_decision_tree_classifier_accuracy_nodups:.2f}%")
 
-            ml_logistic_regression_classifier_prompt(x_train, y_train)
+            ml_decision_tree_classifier_prompt(x_train_unique_np, y_train_unique_np)
         elif choice == '6':
-            baseline_majority_accuracy = baseline_majority(y_test)
-            print(f"Baseline majority accuracy: {baseline_majority_accuracy}")
-            baseline_keyword_accuracy = baseline_keyword(x_test, y_test, rules)
-            print(f"Baseline keyword accuracy: {baseline_keyword_accuracy}")
-            ml_decision_tree_classifier_accuracy_dups = ml_decision_tree_classifier(x_train, y_train, x_test, y_test)
-            print(f"Machine Learing Decision Tree Classifier accuracy (with Duplicates): {ml_decision_tree_classifier_accuracy_dups}")
-            ml_decision_tree_classifier_accuracy_nodups = ml_decision_tree_classifier(x_train_unique_np, y_train_unique_np, x_test_unique_np, y_test_unique_np)
-            print(f"Machine Learing Decision Tree Classifier accuracy (without Duplicates): {ml_decision_tree_classifier_accuracy_nodups}")
-            ml_logistic_regression_classifier_accuracy_dups = ml_logistic_regression_classifier(x_train, y_train, x_test, y_test)
-            print(f"Machine Learing Logistic Regression Classifier accuracy (with Duplicates): {ml_logistic_regression_classifier_accuracy_dups}")
-            ml_logistic_regression_classifier_accuracy_nodups = ml_logistic_regression_classifier(x_train_unique_np, y_train_unique_np, x_test_unique_np, y_test_unique_np)
-            print(f"Machine Learing Logistic Regression Classifier accuracy (without Duplicates): {ml_logistic_regression_classifier_accuracy_nodups}")
+            ml_logistic_regression_classifier_accuracy_dups, c_report = ml_logistic_regression_classifier(x_train, y_train, x_test, y_test)
+            print(f"Machine Learing Logistic Regression Classifier accuracy (with Duplicates): {ml_logistic_regression_classifier_accuracy_dups:.2f}%")
+            
+            ml_logistic_regression_classifier_prompt(x_train, y_train)
+        elif choice == '7':
+            ml_logistic_regression_classifier_accuracy_nodups, c_report = ml_logistic_regression_classifier(x_train_unique_np, y_train_unique_np, x_test_unique_np, y_test_unique_np)
+            print(f"Machine Learing Logistic Regression Classifier accuracy (without Duplicates): {ml_logistic_regression_classifier_accuracy_nodups:.2f}%")
+
+            ml_logistic_regression_classifier_prompt(x_train_unique_np, y_train_unique_np)
+        elif choice == '8':
+            baseline_majority_accuracy, c_report1 = baseline_majority(y_test)
+            print(f"Baseline majority accuracy: {baseline_majority_accuracy:.2f}%")
+            print(c_report1)
+            baseline_keyword_accuracy, c_report2 = baseline_keyword(x_test, y_test, rules)
+            print(f"Baseline keyword accuracy: {baseline_keyword_accuracy:.2f}%")
+            print(c_report2)
+            ml_decision_tree_classifier_accuracy_dups, c_report3 = ml_decision_tree_classifier(x_train, y_train, x_test, y_test)
+            print(f"Machine Learing Decision Tree Classifier accuracy (with Duplicates): {ml_decision_tree_classifier_accuracy_dups:.2f}%")
+            print(c_report3)
+            ml_decision_tree_classifier_accuracy_nodups, c_report4 = ml_decision_tree_classifier(x_train_unique_np, y_train_unique_np, x_test_unique_np, y_test_unique_np)
+            print(f"Machine Learing Decision Tree Classifier accuracy (without Duplicates): {ml_decision_tree_classifier_accuracy_nodups:.2f}%")
+            print(c_report4)
+            ml_logistic_regression_classifier_accuracy_dups, c_report5 = ml_logistic_regression_classifier(x_train, y_train, x_test, y_test)
+            print(f"Machine Learing Logistic Regression Classifier accuracy (with Duplicates): {ml_logistic_regression_classifier_accuracy_dups:.2f}%")
+            print(c_report5)
+            ml_logistic_regression_classifier_accuracy_nodups, c_report6 = ml_logistic_regression_classifier(x_train_unique_np, y_train_unique_np, x_test_unique_np, y_test_unique_np)
+            print(f"Machine Learing Logistic Regression Classifier accuracy (without Duplicates): {ml_logistic_regression_classifier_accuracy_nodups:.2f}%")
+            print(c_report6)
         elif choice == '0':
             print("Exiting...")
             break
