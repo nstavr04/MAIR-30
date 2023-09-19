@@ -5,6 +5,8 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
+import Levenshtein
+import random
 
 # State transition function (Integer with ifs or something)
 
@@ -40,15 +42,17 @@ from sklearn.metrics import accuracy_score
 # 10. Provide asked restaurant details
 # 11. Goodbye
 
-#fields that need to be filled:
-area = None
-pricerange = None
-food = None
+# Fields that need to be filled:
+preferenceField = {
+    'area': None,
+    'pricerange': None,
+    'food': None
+}
 
-#state transistion function to change the state
-#@cur_state: int, the current state
-#@cur_dialog_act: string, the predicted dialog act for the current utterance
-#@cur_utterance: string, the current utterance provided by the user
+# State transistion function to change the state
+# @cur_state: int, the current state
+# @cur_dialog_act: string, the predicted dialog act for the current utterance
+# @cur_utterance: string, the current utterance provided by the user
 def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
     #check the current state
     #first thing to do is to check whether there was a misspelling
@@ -61,11 +65,11 @@ def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
             if cur_dialog_act != 'inform':
                 return 3
             #todo update known information using appropriate function
-            if area == None:
+            if preferenceField['area'] == None:
                 return 3
-            if pricerange == None:
+            if preferenceField['pricerange'] == None:
                 return 4
-            if food == None:
+            if preferenceField['food'] == None:
                 return 5
         case 2:
             if misspelling_detected:
@@ -130,9 +134,25 @@ def keyword_matching(utterance):
 
     return keywords
 
-def levenshtein_distance(keyword, keyword_type, domain_terms):
+def levenshtein_distance(keyword, keyword_type, domain_terms_dict):
 
-    return 0
+    min_distance = 4
+    closest_terms = []
+
+    for term in domain_terms_dict[keyword_type]:
+        distance = Levenshtein.distance(keyword, term)
+        if distance < min_distance:
+            min_distance = distance
+            closest_terms = [term]
+        elif distance == min_distance:
+            closest_terms.append(term)
+
+    if min_distance <= 3:
+        preferenceField[keyword_type] = random.choice(closest_terms)
+        return True
+    else:
+        print("Big mispelling, need an according error message")
+        return False
 
 def main():
 
@@ -165,23 +185,37 @@ def main():
             next_state = 1
 
         current_state = next_state
-            
-        predicted_label, utterance = prompt_input(vectorizer, clf)
-        print(predicted_label, " | ", utterance)
-
-        next_state = state_transition_function(current_state, predicted_label, utterance)
-
-        # Keyword should be a list where
-        # 0: area
-        # 1: pricerange
-        # 2: food
-
-        keywords = keyword_matching(utterance)
         
-        cnt = 0
-        for keyword in keywords:
-            levenshtein_distance(keyword, 0, domain_terms)
-            cnt+=1
+        # Used to only go into state transition function once
+        # The while loop is to keep asking for input until we get a valid preference in case we get a big misspelling
+        checkstate = True
+        while True:
+            predicted_label, utterance = prompt_input(vectorizer, clf)
+            print(predicted_label, " | ", utterance)
+
+            if checkstate:
+                next_state = state_transition_function(current_state, predicted_label, utterance)
+                checkstate = False
+
+            # Keyword should be a list where
+            # 0: area
+            # 1: pricerange
+            # 2: food
+            keywords = keyword_matching(utterance)
+
+            valid_keywords = True
+            # I will get only 3 keywords, 1 for each preference and pass it in levenshtein_distance
+            cnt = 0
+            for keyword in keywords: 
+                bool = levenshtein_distance(keyword, 0, domain_terms_dict)
+                # If we got too big of a misspelling we need to re-ask the preference
+                if not bool:
+                    print({keyword} + " is not a valid preference, please re-enter your preference")
+                    valid_keywords = False
+                cnt+=1
+            
+            if valid_keywords:
+                break
 
 if __name__ == "__main__":
     main()
