@@ -36,12 +36,9 @@ from sklearn.metrics import accuracy_score
 # 6. Express no resto available
 # 7. Ask for correction
 # 8. Confirm user wants to leave
-# 9. Ask for correction
-# 10. Suggest Restaurant
-# 11. Ask for correction
-# 12. Provide asked restaurant details
-# 13. Ask for correction
-# 14. Goodbye
+# 9. Suggest Restaurant
+# 10. Provide asked restaurant details
+# 11. Goodbye
 
 def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
 
@@ -83,7 +80,7 @@ def main():
 
     print("Dialog management system")
 
-    # possible_states = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+    # possible_states = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
     current_state = 1
 
     vectorizer, clf = train_ml_model()
