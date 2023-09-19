@@ -76,6 +76,12 @@ def prompt_input(vectorizer, clf):
 
     return predicted_label, utterance
 
+def keyword_matching(utterance):
+
+    keywords = []
+
+    return keywords
+
 def main():
 
     print("Dialog management system")
@@ -91,6 +97,7 @@ def main():
 
         next_state = state_transition_function(current_state, predicted_label, utterance)
 
+        keywords = keyword_matching(utterance)
         # use levenshtein distance here on utterance
 
 
