@@ -73,7 +73,7 @@ def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
 
     # check the current state
     # first thing to do is to check whether there was a misspelling
-    misspelling_detected = False  # TODO REPLACE WITH FUNCTION FOR EACH CASE
+    misspelling_detected = False
     
     # We check for all the keywords if we have a big mispelling
     # If yes we will raise the misspelling flag
@@ -176,7 +176,6 @@ def train_ml_model():
 
     return vectorizer, clf
 
-
 def prompt_input(vectorizer, clf):
 
     utterance = input("Please enter utterance: ").lower()
@@ -186,6 +185,7 @@ def prompt_input(vectorizer, clf):
 
     return predicted_label, utterance
 
+# TODO Implment the keyword matching algorithm
 def keyword_matching(utterance):
 
     keywords = {
@@ -193,8 +193,6 @@ def keyword_matching(utterance):
         'pricerange': None,
         'food': None
     }
-
-    # TODO Implment the keyword matching algorithm
 
     return keywords
 
