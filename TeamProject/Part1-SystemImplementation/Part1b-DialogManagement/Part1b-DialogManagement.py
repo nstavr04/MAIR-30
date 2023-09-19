@@ -41,8 +41,6 @@ def train_ml_model():
 
     df.drop('data', axis=1, inplace=True)
 
-    df_deduplicated = df.drop_duplicates(subset=['text'])
-
     # Features and Labels
     x = df['text']
     y = df['label']
