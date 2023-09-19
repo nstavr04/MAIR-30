@@ -49,18 +49,46 @@ preferenceField = {
     'food': None
 }
 
-#state transistion function to change the state
-#@cur_state: int, the current state
-#@cur_dialog_act: string, the predicted dialog act for the current utterance
-#@cur_utterance: string, the current utterance provided by the user
+domain_terms_dict = {
+        'PriceRange': ['cheap', 'moderate', 'expensive'],
+        'Area': ['north', 'south', 'east', 'west', 'central'],
+        'Food': ['african', 'asian oriental', 'australasian', 'bistro', 'british',
+            'catalan', 'chinese', 'cuban', 'european', 'french', 'fusion',
+            'gastropub', 'indian', 'international', 'italian', 'jamaican',
+            'japanese', 'korean', 'lebanese', 'mediterranean',
+            'modern european', 'moroccan', 'north american', 'persian',
+            'polynesian', 'portuguese', 'romanian', 'seafood', 'spanish',
+            'steakhouse', 'swiss', 'thai', 'traditional', 'turkish', 'tuscan',
+            'vietnamese']
+    }
+
+# State transistion function to change the state
+# @cur_state: int, the current state
+# @cur_dialog_act: string, the predicted dialog act for the current utterance
+# @cur_utterance: string, the current utterance provided by the user
 def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
+    
+    # We need some logic with the keyword_matching (maybe not all utterances need to run this function)
+    keywords = keyword_matching(cur_utterance)
+
     # check the current state
     # first thing to do is to check whether there was a misspelling
     misspelling_detected = False  # TODO REPLACE WITH FUNCTION FOR EACH CASE
+    
+    # We check for all the keywords if we have a big mispelling
+    # If yes we will raise the misspelling flag
+    for keyword_type, keyword in keywords:
+        if keyword is not None:
+            resolved = levenshtein_distance(keyword, keyword_type, domain_terms_dict)
+            if resolved == False:
+                misspelling_detected = True
+                break
+    
     next_state = -1
     match cur_state:
         case 1, 2, 3, 4, 5:
             if misspelling_detected:
+                print("Big mispelling, need an according error message")
                 return 2
             if cur_dialog_act != 'inform':
                 return checkPreferences()
@@ -69,6 +97,7 @@ def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
             return checkPreferences()
         case 6, 7:
             if misspelling_detected:
+                print("Big mispelling, need an according error message")
                 return 7
             if cur_dialog_act == 'bye' or 'thankyou':
                 return 8
@@ -159,7 +188,13 @@ def prompt_input(vectorizer, clf):
 
 def keyword_matching(utterance):
 
-    keywords = []
+    keywords = {
+        'area': None,
+        'pricerange': None,
+        'food': None
+    }
+
+    # TODO Implment the keyword matching algorithm
 
     return keywords
 
@@ -192,58 +227,19 @@ def main():
 
     vectorizer, clf = train_ml_model()
 
-    domain_terms_dict = {
-        'PriceRange': ['cheap', 'moderate', 'expensive'],
-        'Area': ['north', 'south', 'east', 'west', 'central'],
-        'Food': ['african', 'asian oriental', 'australasian', 'bistro', 'british',
-            'catalan', 'chinese', 'cuban', 'european', 'french', 'fusion',
-            'gastropub', 'indian', 'international', 'italian', 'jamaican',
-            'japanese', 'korean', 'lebanese', 'mediterranean',
-            'modern european', 'moroccan', 'north american', 'persian',
-            'polynesian', 'portuguese', 'romanian', 'seafood', 'spanish',
-            'steakhouse', 'swiss', 'thai', 'traditional', 'turkish', 'tuscan',
-            'vietnamese']
-    }
-
     while True:
+
         if next_state == 11:
             print("System outputs Goodbye")
             break
-        elif current_state == 1:
-            next_state = 1
 
         current_state = next_state
         
-        # Used to only go into state transition function once
-        # The while loop is to keep asking for input until we get a valid preference in case we get a big misspelling
-        checkstate = True
-        while True:
-            predicted_label, utterance = prompt_input(vectorizer, clf)
-            print(predicted_label, " | ", utterance)
+        predicted_label, utterance = prompt_input(vectorizer, clf)
+        print(predicted_label, " | ", utterance)
 
-            if checkstate:
-                next_state = state_transition_function(current_state, predicted_label, utterance)
-                checkstate = False
+        next_state = state_transition_function(current_state, predicted_label, utterance)
 
-            # Keyword should be a list where
-            # 0: area
-            # 1: pricerange
-            # 2: food
-            keywords = keyword_matching(utterance)
-
-            valid_keywords = True
-            # I will get only 3 keywords, 1 for each preference and pass it in levenshtein_distance
-            cnt = 0
-            for keyword in keywords: 
-                bool = levenshtein_distance(keyword, 0, domain_terms_dict)
-                # If we got too big of a misspelling we need to re-ask the preference
-                if not bool:
-                    print({keyword} + " is not a valid preference, please re-enter your preference")
-                    valid_keywords = False
-                cnt+=1
-            
-            if valid_keywords:
-                break
 
 if __name__ == "__main__":
     main()
