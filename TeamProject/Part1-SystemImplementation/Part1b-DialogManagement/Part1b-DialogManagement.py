@@ -72,7 +72,7 @@ def train_ml_model():
 
 def prompt_input(vectorizer, clf):
 
-    utterance = input("Please enter utterance: ")
+    utterance = input("Please enter utterance: ").lower()
 
     utterance_bow = vectorizer.transform([utterance])
     predicted_label = clf.predict(utterance_bow)[0]
@@ -90,10 +90,11 @@ def main():
 
     while True:
         predicted_label, utterance = prompt_input(vectorizer, clf)
-        print(predicted_label)
+        print(predicted_label, " | ", utterance)
 
         next_state = state_transition_function(current_state, predicted_label, utterance)
 
+        # use levenshtein distance here on utterance
 
 
 if __name__ == "__main__":
