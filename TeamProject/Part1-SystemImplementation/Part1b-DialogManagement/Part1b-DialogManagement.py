@@ -28,6 +28,21 @@ from sklearn.metrics import accuracy_score
 
 # Check if the test cases are handled correctly
 
+# 1. Welcome
+# 2. Ask for correction with error message
+# 3. Ask Area
+# 4. Ask Price Range
+# 5. Ask Food Type
+# 6. Express no resto available
+# 7. Ask for correction
+# 8. Confirm user wants to leave
+# 9. Ask for correction
+# 10. Suggest Restaurant
+# 11. Ask for correction
+# 12. Provide asked restaurant details
+# 13. Ask for correction
+# 14. Goodbye
+
 def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
 
     next_state = 'Test'
@@ -64,22 +79,11 @@ def prompt_input(vectorizer, clf):
 
     return predicted_label, utterance
 
-# 1. Welcome
-# 2. Ask for correction with error message
-# 3. Ask Area
-# 4. Ask Price Range
-# 5. Ask Food Type
-# 6. Express no resto available
-# 7. Confirm user wants to leave
-# 8. Suggest Restaurant
-# 9. Provide asked restaurant details
-# 10. Goodbye
-
 def main():
 
     print("Dialog management system")
 
-    # possible_states = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    # possible_states = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
     current_state = 1
 
     vectorizer, clf = train_ml_model()
@@ -88,7 +92,8 @@ def main():
         predicted_label, utterance = prompt_input(vectorizer, clf)
         print(predicted_label)
 
-        state_transition_function(current_state, predicted_label, utterance)
+        next_state = state_transition_function(current_state, predicted_label, utterance)
+
 
 
 if __name__ == "__main__":
