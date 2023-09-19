@@ -40,11 +40,59 @@ from sklearn.metrics import accuracy_score
 # 10. Provide asked restaurant details
 # 11. Goodbye
 
+#fields that need to be filled:
+area = None
+pricerange = None
+food = None
+
+#state transistion function to change the state
+#@cur_state: int, the current state
+#@cur_dialog_act: string, the predicted dialog act for the current utterance
+#@cur_utterance: string, the current utterance provided by the user
 def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
-
-    next_state = 'Test'
-
-    return next_state
+    #check the current state
+    #first thing to do is to check whether there was a misspelling
+    misspelling_detected = False  #TODO REPLACE WITH FUNCTION FOR EACH CASE
+    next_state = -1
+    match cur_state:
+        case 1:
+            if misspelling_detected:
+                return 2
+            if cur_dialog_act != 'inform':
+                return 3
+            #todo update known information using appropriate function
+            if area == None:
+                return 3
+            if pricerange == None:
+                return 4
+            if food == None:
+                return 5
+        case 2:
+            if misspelling_detected:
+                return 2
+        case 3:
+            if misspelling_detected:
+                return 2
+        case 4:
+            if misspelling_detected:
+                return 2
+        case 5:
+            if misspelling_detected:
+                return 2
+        case 6:
+            if misspelling_detected:
+                return 7
+        case 7:
+            if misspelling_detected:
+                return 7
+        case 8:
+            return -1
+        case 9:
+            return -1
+        case 10:
+            return -1
+        case 11:
+            return -1
 
 def train_ml_model():
 
