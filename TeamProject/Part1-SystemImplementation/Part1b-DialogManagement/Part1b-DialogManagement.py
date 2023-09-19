@@ -130,24 +130,58 @@ def keyword_matching(utterance):
 
     return keywords
 
+def levenshtein_distance(keyword, keyword_type, domain_terms):
+
+    return 0
+
 def main():
 
     print("Dialog management system")
 
     # possible_states = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
     current_state = 1
+    next_state = 1
 
     vectorizer, clf = train_ml_model()
 
+    domain_terms_dict = {
+        'PriceRange': ['cheap', 'moderate', 'expensive'],
+        'Area': ['north', 'south', 'east', 'west', 'central'],
+        'Food': ['african', 'asian oriental', 'australasian', 'bistro', 'british',
+            'catalan', 'chinese', 'cuban', 'european', 'french', 'fusion',
+            'gastropub', 'indian', 'international', 'italian', 'jamaican',
+            'japanese', 'korean', 'lebanese', 'mediterranean',
+            'modern european', 'moroccan', 'north american', 'persian',
+            'polynesian', 'portuguese', 'romanian', 'seafood', 'spanish',
+            'steakhouse', 'swiss', 'thai', 'traditional', 'turkish', 'tuscan',
+            'vietnamese']
+    }
+
     while True:
+        if next_state == 11:
+            print("System outputs Goodbye")
+            break
+        elif current_state == 1:
+            next_state = 1
+
+        current_state = next_state
+            
         predicted_label, utterance = prompt_input(vectorizer, clf)
         print(predicted_label, " | ", utterance)
 
         next_state = state_transition_function(current_state, predicted_label, utterance)
 
-        keywords = keyword_matching(utterance)
-        # use levenshtein distance here on utterance
+        # Keyword should be a list where
+        # 0: area
+        # 1: pricerange
+        # 2: food
 
+        keywords = keyword_matching(utterance)
+        
+        cnt = 0
+        for keyword in keywords:
+            levenshtein_distance(keyword, 0, domain_terms)
+            cnt+=1
 
 if __name__ == "__main__":
     main()
