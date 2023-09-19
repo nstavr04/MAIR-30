@@ -1,4 +1,3 @@
-import tensorflow as tf
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -16,7 +15,7 @@ import matplotlib.pyplot as plt
     
 # We want to read the dalog_acts.dat file. The first word of every line is the class label and the rest of the line is the text.
 # Change accordingly, my computer does not work for relative paths
-df = pd.read_csv('C:/Users/nikol/OneDrive/Desktop/UU/Period-1/Methods-in-AI/MAIR-30/TeamProject/Part1-SystemImplementation/Part1a-TextClassification/dialog_acts.dat', header=None, names=['data'])
+df = pd.read_csv('dialog_acts.dat', names=['data'])
 
 # Apply the function to split the 'data' column into 'label' and 'text' columns
 df[['label', 'text']] = df['data'].apply(lambda x: pd.Series(x.split(' ', 1)))

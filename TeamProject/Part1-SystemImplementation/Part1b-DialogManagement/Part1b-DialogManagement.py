@@ -1,3 +1,10 @@
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
 
 # State transition function (Integer with ifs or something)
 
@@ -20,3 +27,71 @@
     # If no suggestion, have a message to inform user.
 
 # Check if the test cases are handled correctly
+
+def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
+
+    next_state = 'Test'
+
+    return next_state
+
+def train_ml_model():
+
+    df = pd.read_csv('dialog_acts.dat', names=['data'])
+    df[['label', 'text']] = df['data'].apply(lambda x: pd.Series(x.split(' ', 1)))
+
+    df.drop('data', axis=1, inplace=True)
+
+    df_deduplicated = df.drop_duplicates(subset=['text'])
+
+    # Features and Labels
+    x = df['text']
+    y = df['label']
+
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.15, random_state=11, shuffle=True)
+
+    vectorizer = CountVectorizer()
+    x_train_bow = vectorizer.fit_transform(x_train)
+    
+    clf = LogisticRegression(random_state=0, max_iter=1000)
+    clf.fit(x_train_bow, y_train)
+
+    return vectorizer, clf
+
+def prompt_input(vectorizer, clf):
+
+    utterance = input("Please enter utterance: ")
+
+    utterance_bow = vectorizer.transform([utterance])
+    predicted_label = clf.predict(utterance_bow)[0]
+
+    return predicted_label, utterance
+
+# 1. Welcome
+# 2. Ask for correction with error message
+# 3. Ask Area
+# 4. Ask Price Range
+# 5. Ask Food Type
+# 6. Express no resto available
+# 7. Confirm user wants to leave
+# 8. Suggest Restaurant
+# 9. Provide asked restaurant details
+# 10. Goodbye
+
+def main():
+
+    print("Dialog management system")
+
+    # possible_states = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    current_state = 1
+
+    vectorizer, clf = train_ml_model()
+
+    while True:
+        predicted_label, utterance = prompt_input(vectorizer, clf)
+        print(predicted_label)
+
+        state_transition_function(current_state, predicted_label, utterance)
+
+
+if __name__ == "__main__":
+    main()
