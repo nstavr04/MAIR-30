@@ -75,7 +75,8 @@ def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
             # first thing to do is to check whether there was a misspelling
             preferences_or_misspelling = check_misspelling_update_preferences(cur_utterance)
             if type(preferences_or_misspelling) == str:
-                print("Big mispelling, need an according error message")
+                #print error here because misspelled word is known
+                print_system_message(2, misspelling=preferences_or_misspelling)
                 return 2
             if cur_dialog_act != 'inform':
                 return checkPreferences()
@@ -86,7 +87,8 @@ def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
             # first thing to do is to check whether there was a misspelling
             preferences_or_misspelling = check_misspelling_update_preferences(cur_utterance)
             if type(preferences_or_misspelling) == str:
-                print("Big mispelling, need an according error message")
+                # print error here because misspelled word is known
+                print_system_message(7, misspelling=preferences_or_misspelling)
                 return 7
             if cur_dialog_act == 'bye' or 'thankyou':
                 return 8
@@ -144,6 +146,20 @@ def findRestaurants(area='X', price='X', food='X', path='restaurant_info.csv'):
     if food != 'X':
         restaurants = restaurants[restaurants['food'] == food]
     return restaurants.values
+
+#function to randomly choose a restaurant
+#@parameters:
+#@restaurants: numpy array that contains restaurants from which one is choosen randomly
+#@alreadyUsedRestaurants: numpy array, sublist of restaurant with previously suggest restaurants
+#@return: a numpy array containing a restaurant from @restaurants | template: [name,area,pricerange,food,phone,addr,postcode]
+def chooseRestaurant(restaurants, alreadyUsedRestaurants):
+    if len(restaurants) == 0:
+        return None
+    if len(restaurants) == len(alreadyUsedRestaurants):
+        alreadyUsedRestraunts = []
+
+    restaurants = [i for i in restaurants if i[0] not in alreadyUsedRestraunts[:,0]]
+    return restaurants[random.randint(0,len(restaurants)-1)]
 
 
 def train_ml_model():
@@ -268,14 +284,19 @@ def print_system_message(current_state, misspelling='', restaurant=None, detail=
             food = f" serving {restaurant[3]} food" if restaurant[3] != '' else ""
             print(f"{name} is a nice {pricerange} restaurant{area}{food}")
         case 10:
-            if detail == 'phone':
-                print('Sure the phone number is ', restaurant[4])
-            elif detail == 'addr':
-                print('Sure the address is ', restaurant[5])
-            elif detail == 'postcode':
-                print('Sure the address is ', restaurant[6])
+            phone = ''
+            addr = '',
+            postcode = ''
+            if 'phone' in detail:
+                phone = f', the phone number is {restaurant[4]}'
+            elif 'addr' in detail:
+                addr = f', the address is {restaurant[5]}'
+            elif 'postcode' in detail:
+                postcode = f', the post code is {restaurant[6]}'
             else:
-                print(f"Sorry, I can not provide information of request: {detail}")
+                print(f"Sorry, request information is unknown")
+                return
+            print(f'Sure{phone}{addr}{postcode}')
         case 11:
             print('Goodbye')
 
@@ -290,6 +311,9 @@ def main():
     next_state = 1
 
     vectorizer, clf = train_ml_model()
+    candidate_restaurants = []
+    suggested_restaurants = []
+    current_restaurant = None
 
     while True:
 
@@ -303,6 +327,32 @@ def main():
         print(predicted_label, " | ", utterance)
 
         next_state = state_transition_function(current_state, predicted_label, utterance)
+        if next_state == 2 or next_state == 7: #this case is handled inside of state_transition_function
+            continue
+
+        #if we want to suggest a restaurant, we have to find one
+        restaurant = None
+        if next_state == 9:
+            #if candidate restaurants not computed yet, find them now
+            if len(candidate_restaurants) == 0:
+                candidate_restaurants = findRestaurants(preferenceField['area'],preferenceField['pricerange'],preferenceField['food'])
+            #if not all candidate_restaurants were suggested, choose new restaurant to suggest
+            if len(candidate_restaurants) > len(suggested_restaurants):
+                current_restaurant = chooseRestaurant(candidate_restaurants,suggested_restaurants)
+                suggested_restaurants.append(current_restaurant)
+        detail = ''
+        if next_state == 10:
+            #check what detail is requested
+            if 'phone' in utterance or 'number' in utterance:
+                detail = 'phone'
+            if 'address' in utterance or 'where' in utterance:
+                detail += 'addr'
+            if 'post' in utterance or 'code' in utterance:
+                detail += 'postcode'
+            if detail == '':
+                detail = 'unknown'
+
+        print_system_message(next_state,restaurant=current_restaurant, detail=detail)
 
 
 if __name__ == "__main__":
