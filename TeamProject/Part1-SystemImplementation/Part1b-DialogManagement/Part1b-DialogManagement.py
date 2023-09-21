@@ -319,7 +319,9 @@ def main():
 
     vectorizer, clf = train_ml_model()
     
+    # Restaurants that fit the preferences
     candidate_restaurants = []
+    # Restaurants that were suggested so far
     suggested_restaurants = [[None]]
     current_restaurant = None
 
