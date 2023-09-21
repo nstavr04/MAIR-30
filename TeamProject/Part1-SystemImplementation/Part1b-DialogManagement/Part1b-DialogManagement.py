@@ -75,7 +75,8 @@ def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
     # Check the current state
     match cur_state:
 
-        case 1, 2, 3, 4, 5:
+        case 1 | 2 | 3 | 4 | 5:
+
             if cur_dialog_act != 'inform':
                 return checkPreferences()
             
@@ -90,7 +91,7 @@ def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
             update_preferences(preferences_or_misspelling, current_state=cur_state)
             return checkPreferences()
         
-        case 6, 7:
+        case 6 | 7:
             if cur_dialog_act == 'bye' or 'thankyou':
                 return 8
             if cur_dialog_act != 'inform':
@@ -241,7 +242,7 @@ def check_misspelling_or_preferences(cur_utterance):
 
     # We check for all the keywords if we have a big mispelling
     # If yes we will raise the misspelling flag
-    for keyword_type, keyword in keywords:
+    for keyword_type, keyword in keywords.items():
         if keyword is not None:
             preferences, misspelling = levenshtein_distance(keyword, keyword_type, domain_terms_dict, preferences)
             if len(misspelling) > 0:
@@ -356,6 +357,9 @@ def main():
 
     while True:
 
+        print("Current state: ", current_state)
+        print("Next state: ", next_state)
+
         if next_state == 11:
             print("System outputs Goodbye")
             break
@@ -366,6 +370,7 @@ def main():
         print(predicted_label, " | ", utterance)
 
         next_state = state_transition_function(current_state, predicted_label, utterance)
+        
         if next_state == 2 or next_state == 7: #this case is handled inside of state_transition_function
             continue
 
