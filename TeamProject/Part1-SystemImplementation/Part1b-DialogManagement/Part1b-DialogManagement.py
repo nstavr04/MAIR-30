@@ -54,7 +54,7 @@ preferenceField = {
 
 domain_terms_dict = {
     'pricerange': ['cheap', 'moderate', 'expensive'],
-    'area': ['north', 'south', 'east', 'west', 'central'],
+    'area': ['north', 'south', 'east', 'west', 'centre'],
     'food': ['african', 'asian oriental', 'australasian', 'bistro', 'british',
              'catalan', 'chinese', 'cuban', 'european', 'french', 'fusion',
              'gastropub', 'indian', 'international', 'italian', 'jamaican',
