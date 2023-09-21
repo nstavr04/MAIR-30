@@ -339,7 +339,6 @@ def main():
             continue
 
         #if we want to suggest a restaurant, we have to find one
-        restaurant = None
         if next_state == 9:
             #if candidate restaurants not computed yet, find them now
             if len(candidate_restaurants) == 0:
