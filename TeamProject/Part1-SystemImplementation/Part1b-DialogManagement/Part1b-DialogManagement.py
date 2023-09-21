@@ -312,6 +312,7 @@ def main():
     next_state = 1
 
     vectorizer, clf = train_ml_model()
+    
     candidate_restaurants = []
     suggested_restaurants = [[None]]
     current_restaurant = None
