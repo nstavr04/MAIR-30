@@ -50,9 +50,9 @@ preferenceField = {
 }
 
 domain_terms_dict = {
-    'PriceRange': ['cheap', 'moderate', 'expensive'],
-    'Area': ['north', 'south', 'east', 'west', 'central'],
-    'Food': ['african', 'asian oriental', 'australasian', 'bistro', 'british',
+    'pricerange': ['cheap', 'moderate', 'expensive'],
+    'area': ['north', 'south', 'east', 'west', 'central'],
+    'food': ['african', 'asian oriental', 'australasian', 'bistro', 'british',
              'catalan', 'chinese', 'cuban', 'european', 'french', 'fusion',
              'gastropub', 'indian', 'international', 'italian', 'jamaican',
              'japanese', 'korean', 'lebanese', 'mediterranean',
@@ -119,7 +119,7 @@ def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
 # for the transition function (see model diagram -> long column of diamonds)
 def checkPreferences():
     # if there is no restraunt matching the preferred attributes transite to state 6
-    if len(findRestaurants(preferenceField['area'], preferenceField['pricerange'], preferenceField['food'])) == 0:
+    if len(find_restaurants(preferenceField['area'], preferenceField['pricerange'], preferenceField['food'])) == 0:
         return 6
     # if the preferred area is unknown move to transite 3
     if preferenceField['area'] == None:
@@ -137,29 +137,30 @@ def checkPreferences():
 # lookup function to find restaurants fitting the criteria in the .csv file
 # attributes should be provided as string
 # @return is a numpy array
-def findRestaurants(area='X', price='X', food='X', path='restaurant_info.csv'):
+def find_restaurants(area='X', price='X', food='X', path='restaurant_info.csv'):
     restaurants = pd.read_csv(path)
-    if area != 'X':
+    if area != 'X' and area is not None:
         restaurants = restaurants[restaurants['area'] == area]
-    if price != 'X':
+    if price != 'X' and price is not None:
         restaurants = restaurants[restaurants['pricerange'] == price]
-    if food != 'X':
+    if food != 'X' and food is not None:
         restaurants = restaurants[restaurants['food'] == food]
     return restaurants.values
+
 
 #function to randomly choose a restaurant
 #@parameters:
 #@restaurants: numpy array that contains restaurants from which one is choosen randomly
 #@alreadyUsedRestaurants: numpy array, sublist of restaurant with previously suggest restaurants
 #@return: a numpy array containing a restaurant from @restaurants | template: [name,area,pricerange,food,phone,addr,postcode]
-def chooseRestaurant(restaurants, alreadyUsedRestaurants):
+def choose_restaurant(restaurants, already_used_restaurants):
     if len(restaurants) == 0:
         return None
-    if len(restaurants) == len(alreadyUsedRestaurants):
-        alreadyUsedRestraunts = []
+    if len(restaurants) == len(already_used_restaurants):
+        already_used_restaurants = []
 
-    restaurants = [i for i in restaurants if i[0] not in alreadyUsedRestraunts[:,0]]
-    return restaurants[random.randint(0,len(restaurants)-1)]
+    restaurants = [i for i in restaurants if i[0] not in already_used_restaurants[:,0]]
+    return restaurants[random.randint(0, len(restaurants)-1)]
 
 
 def train_ml_model():
@@ -312,7 +313,7 @@ def main():
 
     vectorizer, clf = train_ml_model()
     candidate_restaurants = []
-    suggested_restaurants = []
+    suggested_restaurants = [[None]]
     current_restaurant = None
 
     while True:
@@ -335,11 +336,14 @@ def main():
         if next_state == 9:
             #if candidate restaurants not computed yet, find them now
             if len(candidate_restaurants) == 0:
-                candidate_restaurants = findRestaurants(preferenceField['area'],preferenceField['pricerange'],preferenceField['food'])
+                candidate_restaurants = find_restaurants(preferenceField['area'], preferenceField['pricerange'], preferenceField['food'])
             #if not all candidate_restaurants were suggested, choose new restaurant to suggest
-            if len(candidate_restaurants) > len(suggested_restaurants):
-                current_restaurant = chooseRestaurant(candidate_restaurants,suggested_restaurants)
-                suggested_restaurants.append(current_restaurant)
+            if len(candidate_restaurants) > len(suggested_restaurants) or suggested_restaurants[0][0] is None:
+                current_restaurant = choose_restaurant(candidate_restaurants, np.array(suggested_restaurants))
+                if suggested_restaurants[0][0] is None:
+                    suggested_restaurants = [current_restaurant]
+                else:
+                    suggested_restaurants.append(current_restaurant)
         detail = ''
         if next_state == 10:
             #check what detail is requested
