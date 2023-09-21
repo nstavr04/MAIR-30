@@ -275,7 +275,8 @@ def update_preferences(preferences, current_state):
                     preferenceField[key] = preferences[key]
         case 6| 7:
             for key in preferences.keys():
-                preferenceField[key] = preferences[key]
+                if preferences[key] is not None:
+                    preferenceField[key] = preferences[key]
 
 # Function to handle system outputs
 # @paramters
