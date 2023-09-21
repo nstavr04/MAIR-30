@@ -72,28 +72,30 @@ def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
 
     match cur_state:
         case 1, 2, 3, 4, 5:
+            if cur_dialog_act != 'inform':
+                return checkPreferences()
             # first thing to do is to check whether there was a misspelling
             preferences_or_misspelling = check_misspelling_or_preferences(cur_utterance)
             if type(preferences_or_misspelling) == str:
                 #print error here because misspelled word is known
                 print_system_message(2, misspelling=preferences_or_misspelling)
                 return 2
-            #if cur_dialog_act != 'inform':
-            #    return checkPreferences()
+
 
             update_preferences(preferences_or_misspelling, current_state=cur_state)
             return checkPreferences()
         case 6, 7:
+            if cur_dialog_act == 'bye' or 'thankyou':
+                return 8
+            if cur_dialog_act != 'inform':
+                return 6  # this is the same (but more efficient) as checkPreferences()
             # first thing to do is to check whether there was a misspelling
             preferences_or_misspelling = check_misspelling_or_preferences(cur_utterance)
             if type(preferences_or_misspelling) == str:
                 # print error here because misspelled word is known
                 print_system_message(7, misspelling=preferences_or_misspelling)
                 return 7
-            if cur_dialog_act == 'bye' or 'thankyou':
-                return 8
-            if cur_dialog_act != 'inform':
-                return 6  # this is the same (but more efficient) as checkPreferences()
+
             update_preferences(preferences_or_misspelling, current_state=cur_state)
             return checkPreferences()
         case 8:
