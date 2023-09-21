@@ -110,7 +110,7 @@ def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
         
         case 8:
             # Check if user really wants to leave
-            if cur_dialog_act in ['bye', 'thankyou', 'ack', 'confirm']:
+            if cur_dialog_act in ['bye', 'thankyou', 'ack', 'confirm','affirm']:
                 return 11
             return 6
         
