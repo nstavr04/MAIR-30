@@ -91,7 +91,7 @@ def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
             return checkPreferences()
         
         case 6 | 7:
-            if cur_dialog_act == 'bye' or 'thankyou':
+            if cur_dialog_act == 'bye' or cur_dialog_act == 'thankyou':
                 return 8
             if cur_dialog_act != 'inform':
                 # checkPreferences() will always return 6 so we just return 6
