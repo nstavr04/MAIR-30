@@ -78,8 +78,8 @@ def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
                 #print error here because misspelled word is known
                 print_system_message(2, misspelling=preferences_or_misspelling)
                 return 2
-            if cur_dialog_act != 'inform':
-                return checkPreferences()
+            #if cur_dialog_act != 'inform':
+            #    return checkPreferences()
 
             update_preferences(preferences_or_misspelling, current_state=cur_state)
             return checkPreferences()
