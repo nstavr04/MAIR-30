@@ -326,12 +326,12 @@ def print_system_message(current_state, misspelling='', restaurant=None, detail=
             postcode = ''
             if 'phone' in detail:
                 phone = f', the phone number is {restaurant[4]}'
-            elif 'addr' in detail:
+            if 'addr' in detail:
                 addr = f', the address is {restaurant[5]}'
-            elif 'postcode' in detail:
+            if 'postcode' in detail:
                 postcode = f', the post code is {restaurant[6]}'
-            else:
-                print(f"Sorry, request information is unknown")
+            if len(detail) == 0:
+                print(f"Please specify whether you want the phone number, the address, or the postcode")
                 return
             print(f'Sure{phone}{addr}{postcode}')
 
