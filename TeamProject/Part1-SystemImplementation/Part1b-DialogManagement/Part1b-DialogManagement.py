@@ -270,11 +270,11 @@ def levenshtein_distance(keyword, keyword_type, domain_terms_dict, preferences):
 def update_preferences(preferences, current_state):
     match current_state:
         case 1| 2| 3| 4| 5:
-            for key in preferences.keys:
+            for key in preferences.keys():
                 if preferenceField[key] is None:
                     preferenceField[key] = preferences[key]
         case 6| 7:
-            for key in preferences.keys:
+            for key in preferences.keys():
                 preferenceField[key] = preferences[key]
 
 # Function to handle system outputs
@@ -305,7 +305,7 @@ def print_system_message(current_state, misspelling='', restaurant=None, detail=
             area = f"in the {preferenceField['area']} part of the town" if preferenceField['area'] is not None else ""
             pricerange = preferenceField['pricerange'] if preferenceField['pricerange'] is not None else ""
             food = f" serving {preferenceField['food']} food" if preferenceField['food'] is not None else ""
-            print(f"Sorry, but there is no {pricerange} restaurant{area}{food}.")
+            print(f"Sorry, but there is no {pricerange} restaurant {area}{food}.")
 
         case 7:
             print(f"Could not recognize word '{misspelling}', please rephrase your input!")
