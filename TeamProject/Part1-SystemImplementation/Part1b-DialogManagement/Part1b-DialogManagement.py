@@ -76,7 +76,6 @@ def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
     match cur_state:
 
         case 1 | 2 | 3 | 4 | 5:
-
             if cur_dialog_act != 'inform':
                 return checkPreferences()
             
@@ -270,11 +269,11 @@ def levenshtein_distance(keyword, keyword_type, domain_terms_dict, preferences):
 
 def update_preferences(preferences, current_state):
     match current_state:
-        case 1, 2, 3, 4, 5:
+        case 1| 2| 3| 4| 5:
             for key in preferences.keys:
                 if preferenceField[key] is None:
                     preferenceField[key] = preferences[key]
-        case 6, 7:
+        case 6| 7:
             for key in preferences.keys:
                 preferenceField[key] = preferences[key]
 
@@ -285,6 +284,7 @@ def update_preferences(preferences, current_state):
 # @restaurant: darray, the restaurant suggested by the system, only needed if @current_state = 9 or 10
 # @detail: string, the requested detail of the restaurant, only needed if @current_state = 10, can be either "phone","addr","postcode"
 def print_system_message(current_state, misspelling='', restaurant=None, detail=None):
+    print(current_state)
     match current_state:
         case 1:
             print("Error detected, System in state 1 [Greeting]")
@@ -373,7 +373,6 @@ def main():
         
         if next_state == 2 or next_state == 7: #this case is handled inside of state_transition_function
             continue
-
         # If we want to suggest a restaurant, we have to find one
         if next_state == 9:
             # If candidate restaurants not computed yet, find them now
