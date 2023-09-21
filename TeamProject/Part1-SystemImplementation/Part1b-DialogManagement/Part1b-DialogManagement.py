@@ -158,8 +158,6 @@ def find_restaurants(area='X', price='X', food='X', path='restaurant_info.csv'):
 def choose_restaurant(restaurants, already_used_restaurants):
     if len(restaurants) == 0:
         return None
-    if len(restaurants) == len(already_used_restaurants):
-        already_used_restaurants = []
 
     restaurants = [i for i in restaurants if i[0] not in already_used_restaurants[:,0]]
     return restaurants[random.randint(0, len(restaurants)-1)]
