@@ -29,16 +29,9 @@ from sklearn.metrics import accuracy_score
 # Check if the test cases are handled correctly
 
 # fields that need to be filled:
-PriceRange = ['cheap', 'moderate', 'expensive']
-Area = ['west', 'north', 'south', 'east', 'centre']
-Food = ['african', 'asian oriental', 'australasian', 'bistro', 'british',
-       'catalan', 'chinese', 'cuban', 'european', 'french', 'fusion',
-       'gastropub', 'indian', 'international', 'italian', 'jamaican',
-       'japanese', 'korean', 'lebanese', 'mediterranean',
-       'modern european', 'moroccan', 'north american', 'persian',
-       'polynesian', 'portuguese', 'romanian', 'seafood', 'spanish',
-       'steakhouse', 'swiss', 'thai', 'traditional', 'turkish', 'tuscan',
-       'vietnamese']
+area = None
+pricerange = None
+food = None
 
 
 # state transistion function to change the state
@@ -142,14 +135,6 @@ def train_ml_model():
 
     return vectorizer, clf
 
-def string_match(category, utterance):
-    for i, cat in enumerate(category):
-        if cat in utterance:
-            return i
-    return -1
-def levenshtein_distance(category, utterance):
-
-    return -1
 
 def prompt_input(vectorizer, clf):
     utterance = input("Please enter utterance: ")
@@ -182,9 +167,7 @@ def main():
     while True:
         predicted_label, utterance = prompt_input(vectorizer, clf)
         print(predicted_label)
-        print(string_match(Area, utterance))
-        print(string_match(PriceRange, utterance))
-        print(string_match(Food, utterance))
+
         state_transition_function(current_state, predicted_label, utterance)
 
 
