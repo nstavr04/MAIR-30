@@ -322,7 +322,7 @@ def print_system_message(current_state, misspelling='', restaurant=None, detail=
 
         case 10:
             phone = ''
-            addr = '',
+            addr = ''
             postcode = ''
             if 'phone' in detail:
                 phone = f', the phone number is {restaurant[4]}'
