@@ -206,7 +206,11 @@ def keyword_matching(utterance):
 
 def check_misspelling_or_preferences(cur_utterance):
     # We need some logic with the keyword_matching (maybe not all utterances need to run this function)
-    preferences = {}  # save preferences in the dictonary
+    preferences = {
+        'area': None,
+        'pricerange': None,
+        'food': None
+    }  # save preferences in the dictonary
 
     keywords = keyword_matching(cur_utterance)
 
@@ -233,7 +237,7 @@ def levenshtein_distance(keyword, keyword_type, domain_terms_dict, preferences):
             closest_terms.append(term)
 
     if min_distance <= 3:
-        preferences[0][keyword_type] = random.choice(closest_terms)
+        preferences[keyword_type] = random.choice(closest_terms)
         return preferences, ''
     else:
         print("Big mispelling, need an according error message")
