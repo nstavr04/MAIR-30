@@ -73,7 +73,7 @@ def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
     match cur_state:
         case 1, 2, 3, 4, 5:
             # first thing to do is to check whether there was a misspelling
-            preferences_or_misspelling = check_misspelling_update_preferences(cur_utterance)
+            preferences_or_misspelling = check_misspelling_or_preferences(cur_utterance)
             if type(preferences_or_misspelling) == str:
                 #print error here because misspelled word is known
                 print_system_message(2, misspelling=preferences_or_misspelling)
@@ -85,7 +85,7 @@ def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
             return checkPreferences()
         case 6, 7:
             # first thing to do is to check whether there was a misspelling
-            preferences_or_misspelling = check_misspelling_update_preferences(cur_utterance)
+            preferences_or_misspelling = check_misspelling_or_preferences(cur_utterance)
             if type(preferences_or_misspelling) == str:
                 # print error here because misspelled word is known
                 print_system_message(7, misspelling=preferences_or_misspelling)
@@ -203,7 +203,7 @@ def keyword_matching(utterance):
     return keywords
 
 
-def check_misspelling_update_preferences(cur_utterance):
+def check_misspelling_or_preferences(cur_utterance):
     # We need some logic with the keyword_matching (maybe not all utterances need to run this function)
     preferences = {}  # save preferences in the dictonary
 
