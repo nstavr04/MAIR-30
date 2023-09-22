@@ -8,6 +8,7 @@ from sklearn.metrics import accuracy_score
 import Levenshtein
 import random
 import string
+import re
 
 # State transition function (Integer with ifs or something)
 
@@ -209,7 +210,6 @@ def prompt_input(vectorizer, clf):
 
     return predicted_label, utterance
 
-# TODO Implment the keyword matching algorithm
 def keyword_matching(utterance):
 
     keywords = {
@@ -218,14 +218,41 @@ def keyword_matching(utterance):
         'food': None
     }
 
+    regex_patterns = {
+    'food': re.compile(r'\b(\w+)\s+(food|restaurant|place)\b'),
+    'pricerange': re.compile(r'\b(\w+)\s+(priced|price)\b'),
+    'area': re.compile(r'\b(\w+)\s+(area|part)|in\s+the\s+(\w+)\b'),
+    }
+
     # Remove punctuation
     translator = str.maketrans("", "", string.punctuation)
-    tokens = utterance.translate(translator).split(' ')
-
+    clean_utterance = utterance.translate(translator)
+    
+    # First we check for exact matches
+    tokens = clean_utterance.split(' ')
     for token in tokens:
         for pref_type, pref in domain_terms_dict.items():
             if token in pref:
                 keywords[pref_type] = token
+
+    # Check for regex patterns
+    for pref_type, pattern in regex_patterns.items():
+        # We only check for the preferences that we didn't find an exact match
+        if keywords[pref_type] is None:
+            match = pattern.search(clean_utterance)
+            if match:
+                # Go through all the subgroups of the regex
+                first_group = match.group(1)
+                print(first_group)
+                if first_group == "any":
+                    # Need to change accordingly for the filtering of .csv files
+                    keywords[pref_type] = "X"
+                # Make sure group is not none
+                elif first_group:
+                    closest_term = levenshtein_distance2(first_group, pref_type)
+                    # If we found a close term we save it as a keyword
+                    if closest_term:
+                        keywords[pref_type] = closest_term
 
     return keywords
 
@@ -242,13 +269,30 @@ def check_misspelling_or_preferences(cur_utterance):
     # We check for all the keywords if we have a big mispelling
     # If yes we will raise the misspelling flag
     for keyword_type, keyword in keywords.items():
-        if keyword is not None:
-            preferences, misspelling = levenshtein_distance(keyword, keyword_type, domain_terms_dict, preferences)
+
+
+        if keyword is not None and keyword != 'X':
+            preferences, misspelling = levenshtein_distance(keyword, keyword_type, preferences)
             if len(misspelling) > 0:
                 return misspelling
     return preferences
 
-def levenshtein_distance(keyword, keyword_type, domain_terms_dict, preferences):
+def levenshtein_distance2(keyword, keyword_type):
+    min_distance = 4
+    closest_terms = []
+    for term in domain_terms_dict[keyword_type]:
+        distance = Levenshtein.distance(keyword, term)
+        if distance < min_distance:
+            min_distance = distance
+            closest_terms = [term]
+        elif distance == min_distance:
+            closest_terms.append(term)
+    if min_distance <= 3:
+        return random.choice(closest_terms)
+    else:
+        return None
+
+def levenshtein_distance(keyword, keyword_type, preferences):
     min_distance = 4
     closest_terms = []
 
@@ -337,12 +381,12 @@ def print_system_message(current_state, misspelling='', restaurant=None, detail=
             print(f'Sure{phone}{addr}{postcode}')
 
         case 11:
-            print('Goodbye')
+            print('Goodbye. Have a nice day!')
 
     return None
 
 def main():
-    print("Dialog management system")
+    print("Hello, welcome to the Group 30 restaurant recommendation system. You can ask for restaurants by area, price range or food type. How may I help you?")
 
     # possible_states = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
     current_state = 1
@@ -358,20 +402,18 @@ def main():
 
     while True:
 
-        print("Current state: ", current_state)
-        print("Next state: ", next_state)
-
         if next_state == 11:
-            print("System outputs Goodbye")
             break
-
+    
         current_state = next_state
+        print("Current state: ", current_state)
 
         predicted_label, utterance = prompt_input(vectorizer, clf)
-        print(predicted_label, " | ", utterance)
 
         next_state = state_transition_function(current_state, predicted_label, utterance)
         
+        print(predicted_label, " | ", utterance, '(', preferenceField['area'], ' ',preferenceField['pricerange'], ' ',preferenceField['food'], ')')
+
         if next_state == 2 or next_state == 7: #this case is handled inside of state_transition_function
             continue
         # If we want to suggest a restaurant, we have to find one
