@@ -53,6 +53,7 @@ preferenceField = {
     'food': None
 }
 
+# Possibly more food types, need to check
 domain_terms_dict = {
     'pricerange': ['cheap', 'moderate', 'expensive'],
     'area': ['north', 'south', 'east', 'west', 'centre'],
@@ -63,7 +64,7 @@ domain_terms_dict = {
              'modern european', 'moroccan', 'north american', 'persian',
              'polynesian', 'portuguese', 'romanian', 'seafood', 'spanish',
              'steakhouse', 'swiss', 'thai', 'traditional', 'turkish', 'tuscan',
-             'vietnamese']
+             'vietnamese', 'swedish', 'russian', 'welsh', 'austrian', 'belgian', 'brazilian']
 }
 
 
@@ -77,9 +78,13 @@ def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
     match cur_state:
 
         case 1 | 2 | 3 | 4 | 5:
-            if cur_dialog_act != 'inform':
-                return checkPreferences()
             
+            # THIS WAS UNCOMMENTED. NEED CHECK THAT IT STILL WORKS CORRECTLY
+            # Moved it so it catches reqalts as well with a preference
+            
+            # if cur_dialog_act != 'inform':
+            #     return checkPreferences()
+
             # First thing to do is to check whether there was a misspelling
             preferences_or_misspelling = check_misspelling_or_preferences(cur_utterance)
 
@@ -219,7 +224,7 @@ def keyword_matching(utterance):
     }
 
     regex_patterns = {
-    'food': re.compile(r'\b(\w+)\s+(food|restaurant|place)\b'),
+    'food': re.compile(r'\b(\w+)\s+(food|restaurant|place|restaurantin)\b'),
     'pricerange': re.compile(r'\b(\w+)\s+(priced|price)\b'),
     'area': re.compile(r'\b(\w+)\s+(part|area)|in\s+the\s+(\w+)\b'),
     }
@@ -245,7 +250,7 @@ def keyword_matching(utterance):
 
     else:
 
-        ignore_words = {'a', 'the'}
+        ignore_words = {'a', 'the', 'in', 'cheap'}
         # Check for regex patterns
         for pref_type, pattern in regex_patterns.items():
             # We only check for the preferences that we didn't find an exact match
@@ -258,7 +263,6 @@ def keyword_matching(utterance):
                     # Third group is to catch cases of "word + in the + area"
                     if len(match.groups()) == 3:
                         third_group = match.group(3)
-                    print(first_group)
                     if first_group == "any":
                         # Need to change accordingly for the filtering of .csv files
                         keywords[pref_type] = "X"
@@ -388,10 +392,10 @@ def print_system_message(current_state, misspelling='', restaurant=None, detail=
             print("What kind of food would you like?")
 
         case 6:
-            area = f"in the {preferenceField['area']} part of the town" if preferenceField['area'] is not None else ""
+            area = f" in the {preferenceField['area']} part of the town" if preferenceField['area'] is not None else ""
             pricerange = preferenceField['pricerange'] if preferenceField['pricerange'] is not None else ""
             food = f" serving {preferenceField['food']} food" if preferenceField['food'] is not None else ""
-            print(f"Sorry, but there is no {pricerange} restaurant {area}{food}.")
+            print(f"Sorry, but there is no {pricerange} restaurant{area}{food}.")
 
         case 7:
             print(f"Could not recognize word '{misspelling}', please rephrase your input!")
