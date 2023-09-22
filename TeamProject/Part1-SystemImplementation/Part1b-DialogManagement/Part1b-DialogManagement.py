@@ -81,7 +81,7 @@ def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
             
             # THIS WAS UNCOMMENTED. NEED CHECK THAT IT STILL WORKS CORRECTLY
             # Moved it so it catches reqalts as well with a preference
-            
+
             # if cur_dialog_act != 'inform':
             #     return checkPreferences()
 
@@ -259,13 +259,18 @@ def keyword_matching(utterance):
                 if match:
                     # Go through all the subgroups of the regex
                     first_group = match.group(1)
+                    second_group = match.group(2)
                     third_group = None
                     # Third group is to catch cases of "word + in the + area"
                     if len(match.groups()) == 3:
                         third_group = match.group(3)
                     if first_group == "any":
-                        # Need to change accordingly for the filtering of .csv files
-                        keywords[pref_type] = "X"
+                        if second_group == "food" or second_group == "restaurant" or second_group == "place" or second_group == "restaurantin":
+                            keywords['food'] = "X"
+                        elif second_group == "priced" or second_group == "price":
+                            keywords['pricerange'] = "X"
+                        elif second_group == "part" or second_group == "area":
+                            keywords['area'] = "X"
                     elif third_group:
                         closest_term = levenshtein_distance_regex(third_group, pref_type)
                         # If we found a close term we save it as a keyword
@@ -299,6 +304,10 @@ def check_misspelling_or_preferences(cur_utterance):
             preferences, misspelling = levenshtein_distance(keyword, keyword_type, preferences)
             if len(misspelling) > 0:
                 return misspelling
+        
+        if keyword == 'X':
+            preferences[keyword_type] = 'X'
+
     return preferences
 
 def levenshtein_distance_single(keyword):
