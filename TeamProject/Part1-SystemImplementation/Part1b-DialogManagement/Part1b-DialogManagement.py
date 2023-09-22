@@ -232,27 +232,37 @@ def keyword_matching(utterance):
     tokens = clean_utterance.split(' ')
     for token in tokens:
         for pref_type, pref in domain_terms_dict.items():
-            if token in pref:
-                keywords[pref_type] = token
+            for pref_term in pref:
+                if token==pref_term:
+                    keywords[pref_type] = token
 
-    # Check for regex patterns
-    for pref_type, pattern in regex_patterns.items():
-        # We only check for the preferences that we didn't find an exact match
-        if keywords[pref_type] is None:
-            match = pattern.search(clean_utterance)
-            if match:
-                # Go through all the subgroups of the regex
-                first_group = match.group(1)
-                print(first_group)
-                if first_group == "any":
-                    # Need to change accordingly for the filtering of .csv files
-                    keywords[pref_type] = "X"
-                # Make sure group is not none
-                elif first_group:
-                    closest_term = levenshtein_distance2(first_group, pref_type)
-                    # If we found a close term we save it as a keyword
-                    if closest_term:
-                        keywords[pref_type] = closest_term
+    # User only provided one word
+    if len(tokens) == 1:
+        token = tokens[0]
+        closest_term, pref_type = levenshtein_distance_single(token)
+        print(closest_term, pref_type)
+        if closest_term:
+            keywords[pref_type] = closest_term
+
+    else:
+        # Check for regex patterns
+        for pref_type, pattern in regex_patterns.items():
+            # We only check for the preferences that we didn't find an exact match
+            if keywords[pref_type] is None:
+                match = pattern.search(clean_utterance)
+                if match:
+                    # Go through all the subgroups of the regex
+                    first_group = match.group(1)
+                    print(first_group)
+                    if first_group == "any":
+                        # Need to change accordingly for the filtering of .csv files
+                        keywords[pref_type] = "X"
+                    # Make sure group is not none
+                    elif first_group:
+                        closest_term = levenshtein_distance_regex(first_group, pref_type)
+                        # If we found a close term we save it as a keyword
+                        if closest_term:
+                            keywords[pref_type] = closest_term
 
     return keywords
 
@@ -266,6 +276,8 @@ def check_misspelling_or_preferences(cur_utterance):
 
     keywords = keyword_matching(cur_utterance)
 
+    print('Keywords are: ', keywords)
+
     # We check for all the keywords if we have a big mispelling
     # If yes we will raise the misspelling flag
     for keyword_type, keyword in keywords.items():
@@ -276,7 +288,28 @@ def check_misspelling_or_preferences(cur_utterance):
                 return misspelling
     return preferences
 
-def levenshtein_distance2(keyword, keyword_type):
+def levenshtein_distance_single(keyword):
+    min_distance = 4
+    closest_terms = []
+    # Since it's a single word we need to check for all keyword types
+    for keyword_type in domain_terms_dict.keys():
+        for term in domain_terms_dict[keyword_type]:
+            distance = Levenshtein.distance(keyword, term)
+            if keyword_type == 'food':
+                print(term, ' ', distance)
+            if distance < min_distance:
+                min_distance = distance
+                closest_terms = [term]
+            elif distance == min_distance:
+                closest_terms.append(term)
+    
+        print(closest_terms, min_distance)
+        if min_distance <= 3:
+            return random.choice(closest_terms), keyword_type
+        
+    return None, None
+
+def levenshtein_distance_regex(keyword, keyword_type):
     min_distance = 4
     closest_terms = []
     for term in domain_terms_dict[keyword_type]:
