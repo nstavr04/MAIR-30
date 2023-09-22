@@ -221,7 +221,7 @@ def keyword_matching(utterance):
     regex_patterns = {
     'food': re.compile(r'\b(\w+)\s+(food|restaurant|place)\b'),
     'pricerange': re.compile(r'\b(\w+)\s+(priced|price)\b'),
-    'area': re.compile(r'\b(\w+)\s+(area|part)|in\s+the\s+(\w+)\b'),
+    'area': re.compile(r'\b(\w+)\s+(part|area)|in\s+the\s+(\w+)\b'),
     }
 
     # Remove punctuation
@@ -269,7 +269,6 @@ def check_misspelling_or_preferences(cur_utterance):
     # We check for all the keywords if we have a big mispelling
     # If yes we will raise the misspelling flag
     for keyword_type, keyword in keywords.items():
-
 
         if keyword is not None and keyword != 'X':
             preferences, misspelling = levenshtein_distance(keyword, keyword_type, preferences)
