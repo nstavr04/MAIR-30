@@ -56,7 +56,7 @@ preferenceField = {
 domain_terms_dict = {
     'pricerange': ['cheap', 'moderate', 'expensive'],
     'area': ['north', 'south', 'east', 'west', 'centre'],
-    'food': ['african', 'asian oriental', 'australasian', 'bistro', 'british',
+    'food': ['world', 'african', 'asian oriental', 'australasian', 'bistro', 'british',
              'catalan', 'chinese', 'cuban', 'european', 'french', 'fusion',
              'gastropub', 'indian', 'international', 'italian', 'jamaican',
              'japanese', 'korean', 'lebanese', 'mediterranean',
@@ -230,6 +230,7 @@ def keyword_matching(utterance):
     
     # First we check for exact matches
     tokens = clean_utterance.split(' ')
+    print(tokens)
     for token in tokens:
         for pref_type, pref in domain_terms_dict.items():
             for pref_term in pref:
@@ -295,15 +296,15 @@ def levenshtein_distance_single(keyword):
     for keyword_type in domain_terms_dict.keys():
         for term in domain_terms_dict[keyword_type]:
             distance = Levenshtein.distance(keyword, term)
-            if keyword_type == 'food':
-                print(term, ' ', distance)
+            # if keyword_type == 'food':
+            #     print(term, ' ', distance)
             if distance < min_distance:
                 min_distance = distance
                 closest_terms = [term]
             elif distance == min_distance:
                 closest_terms.append(term)
     
-        print(closest_terms, min_distance)
+        # print(closest_terms, min_distance)
         if min_distance <= 3:
             return random.choice(closest_terms), keyword_type
         
