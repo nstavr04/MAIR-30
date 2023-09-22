@@ -230,7 +230,6 @@ def keyword_matching(utterance):
     
     # First we check for exact matches
     tokens = clean_utterance.split(' ')
-    print(tokens)
     for token in tokens:
         for pref_type, pref in domain_terms_dict.items():
             for pref_term in pref:
@@ -241,11 +240,12 @@ def keyword_matching(utterance):
     if len(tokens) == 1:
         token = tokens[0]
         closest_term, pref_type = levenshtein_distance_single(token)
-        print(closest_term, pref_type)
         if closest_term:
             keywords[pref_type] = closest_term
 
     else:
+
+        ignore_words = {'a', 'the'}
         # Check for regex patterns
         for pref_type, pattern in regex_patterns.items():
             # We only check for the preferences that we didn't find an exact match
@@ -254,12 +254,20 @@ def keyword_matching(utterance):
                 if match:
                     # Go through all the subgroups of the regex
                     first_group = match.group(1)
+                    third_group = None
+                    # Third group is to catch cases of "word + in the + area"
+                    if len(match.groups()) == 3:
+                        third_group = match.group(3)
                     print(first_group)
                     if first_group == "any":
                         # Need to change accordingly for the filtering of .csv files
                         keywords[pref_type] = "X"
-                    # Make sure group is not none
-                    elif first_group:
+                    elif third_group:
+                        closest_term = levenshtein_distance_regex(third_group, pref_type)
+                        # If we found a close term we save it as a keyword
+                        if closest_term:
+                            keywords[pref_type] = closest_term
+                    elif first_group and first_group not in ignore_words:
                         closest_term = levenshtein_distance_regex(first_group, pref_type)
                         # If we found a close term we save it as a keyword
                         if closest_term:
