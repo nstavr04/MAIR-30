@@ -82,11 +82,11 @@ def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
             # THIS WAS UNCOMMENTED. NEED CHECK THAT IT STILL WORKS CORRECTLY
             # Moved it so it catches reqalts as well with a preference
 
-            # if cur_dialog_act != 'inform':
-            #     return checkPreferences()
+            if cur_dialog_act != 'inform' and cur_dialog_act != 'reqalts':
+                 return checkPreferences()
 
             # First thing to do is to check whether there was a misspelling
-            preferences_or_misspelling = check_misspelling_or_preferences(cur_utterance)
+            preferences_or_misspelling = check_misspelling_or_preferences(cur_utterance, cur_state)
 
             if type(preferences_or_misspelling) == str:
                 # Print error message here because misspelled word is known
@@ -104,7 +104,7 @@ def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
                 return 6  
             
             # First thing to do is to check whether there was a misspelling
-            preferences_or_misspelling = check_misspelling_or_preferences(cur_utterance)
+            preferences_or_misspelling = check_misspelling_or_preferences(cur_utterance, cur_state)
             
             if type(preferences_or_misspelling) == str:
                 # Print error message here because misspelled word is known
@@ -215,13 +215,27 @@ def prompt_input(vectorizer, clf):
 
     return predicted_label, utterance
 
-def keyword_matching(utterance):
+def keyword_matching(utterance,cur_state):
+    dont_cares = ['any',"don't care","i don't care","i do not care","i don't mind","i do not mind"]
+
+
 
     keywords = {
         'area': None,
         'pricerange': None,
         'food': None
     }
+
+    if utterance in dont_cares:
+        if cur_state == 3:
+            keywords['area'] = 'X'
+            return keywords
+        if cur_state == 4:
+            keywords['pricerange'] = 'X'
+            return keywords
+        if cur_state == 5:
+            keywords['food'] = 'X'
+            return keywords
 
     regex_patterns = {
     'food': re.compile(r'\b(\w+)\s+(food|restaurant|place|restaurantin)\b'),
@@ -239,18 +253,22 @@ def keyword_matching(utterance):
         for pref_type, pref in domain_terms_dict.items():
             for pref_term in pref:
                 if token==pref_term:
+                    if token == 'any':
+                        token = 'X'
                     keywords[pref_type] = token
 
     # User only provided one word
     if len(tokens) == 1:
         token = tokens[0]
         closest_term, pref_type = levenshtein_distance_single(token)
-        if closest_term:
+        if closest_term: #todo remove this if? closest_term is not a boolean so what happens here?
+            if closest_term == 'any':
+                closest_term = 'X'
             keywords[pref_type] = closest_term
 
     else:
 
-        ignore_words = {'a', 'the', 'in', 'cheap'}
+        ignore_words = {'a', 'the', 'in', 'cheap', 'hi'}
         # Check for regex patterns
         for pref_type, pattern in regex_patterns.items():
             # We only check for the preferences that we didn't find an exact match
@@ -284,7 +302,7 @@ def keyword_matching(utterance):
 
     return keywords
 
-def check_misspelling_or_preferences(cur_utterance):
+def check_misspelling_or_preferences(cur_utterance, cur_state):
     # We need some logic with the keyword_matching (maybe not all utterances need to run this function)
     preferences = {
         'area': None,
@@ -292,7 +310,7 @@ def check_misspelling_or_preferences(cur_utterance):
         'food': None
     }  # save preferences in the dictonary
 
-    keywords = keyword_matching(cur_utterance)
+    keywords = keyword_matching(cur_utterance, cur_state)
 
     print('Keywords are: ', keywords)
 
@@ -414,7 +432,7 @@ def print_system_message(current_state, misspelling='', restaurant=None, detail=
 
         case 9:
             name = restaurant[0]
-            area = f"in the {restaurant[2]} part of the town" if restaurant[2] != '' else ""
+            area = f" in the {restaurant[2]} part of the town" if restaurant[2] != '' else ""
             pricerange = restaurant[1] if restaurant[1] != '' else ""
             food = f" serving {restaurant[3]} food" if restaurant[3] != '' else ""
             print(f"{name} is a nice {pricerange} restaurant{area}{food}")
