@@ -257,18 +257,21 @@ def keyword_matching(utterance,cur_state):
                         token = 'X'
                     keywords[pref_type] = token
 
+    # List of words to ignore that have a <=3 levenshtein distance to a preference
+    ignore_words = {'a', 'the', 'in', 'cheap', 'hi', 'hey'}
+
     # User only provided one word
     if len(tokens) == 1:
         token = tokens[0]
-        closest_term, pref_type = levenshtein_distance_single(token)
-        if closest_term: #todo remove this if? closest_term is not a boolean so what happens here?
-            if closest_term == 'any':
-                closest_term = 'X'
-            keywords[pref_type] = closest_term
+        if token not in ignore_words:
+            closest_term, pref_type = levenshtein_distance_single(token)
+            # They if basically means that closest_term is not None
+            if closest_term:
+                if closest_term == 'any':
+                    closest_term = 'X'
+                keywords[pref_type] = closest_term
 
     else:
-
-        ignore_words = {'a', 'the', 'in', 'cheap', 'hi'}
         # Check for regex patterns
         for pref_type, pattern in regex_patterns.items():
             # We only check for the preferences that we didn't find an exact match
