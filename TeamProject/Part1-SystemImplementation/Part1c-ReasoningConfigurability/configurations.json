@@ -1,0 +1,7 @@
+{
+    "dialog_restart_on": true,
+    "ASR_on": false,
+    "caps_on": false,
+    "levenshtein_dis": 3
+  }
+  
