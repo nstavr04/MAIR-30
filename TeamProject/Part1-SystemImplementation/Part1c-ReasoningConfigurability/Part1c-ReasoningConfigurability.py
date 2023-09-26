@@ -80,7 +80,7 @@ domain_terms_dict = {
 dialog_restart_on = True
 ASR_on = False
 caps_on = True
-levenshtein_distance = 3
+levenshtein_dis = 3
 
 # State transistion function to change the state
 # @cur_state: int, the current state
@@ -104,7 +104,7 @@ def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
 
             if type(preferences_or_misspelling) == str:
                 # Print error message here because misspelled word is known
-                print(get_system_message(2, misspelling=preferences_or_misspelling))
+                print_system_message(2, misspelling=preferences_or_misspelling)
                 return 2
 
             update_preferences(preferences_or_misspelling, current_state=cur_state)
@@ -122,7 +122,7 @@ def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
             
             if type(preferences_or_misspelling) == str:
                 # Print error message here because misspelled word is known
-                print(get_system_message(7, misspelling=preferences_or_misspelling))
+                print_system_message(7, misspelling=preferences_or_misspelling)
                 return 7
 
             update_preferences(preferences_or_misspelling, current_state=cur_state)
@@ -397,7 +397,7 @@ def check_misspelling_or_preferences(cur_utterance, cur_state):
     return preferences
 
 def levenshtein_distance_single(keyword):
-    min_distance = levenshtein_distance + 1
+    min_distance = levenshtein_dis + 1
     closest_terms = []
     # Since it's a single word we need to check for all keyword types
     for keyword_type in domain_terms_dict.keys():
@@ -412,13 +412,13 @@ def levenshtein_distance_single(keyword):
                 closest_terms.append(term)
     
         # print(closest_terms, min_distance)
-        if min_distance <= levenshtein_distance:
+        if min_distance <= levenshtein_dis:
             return random.choice(closest_terms), keyword_type
         
     return None, None
 
 def levenshtein_distance_regex(keyword, keyword_type):
-    min_distance = levenshtein_distance + 1
+    min_distance = levenshtein_dis + 1
     closest_terms = []
     for term in domain_terms_dict[keyword_type]:
         distance = Levenshtein.distance(keyword, term)
@@ -427,13 +427,13 @@ def levenshtein_distance_regex(keyword, keyword_type):
             closest_terms = [term]
         elif distance == min_distance:
             closest_terms.append(term)
-    if min_distance <= levenshtein_distance:
+    if min_distance <= levenshtein_dis:
         return random.choice(closest_terms)
     else:
         return None
 
 def levenshtein_distance(keyword, keyword_type, preferences):
-    min_distance = levenshtein_distance + 1
+    min_distance = levenshtein_dis + 1
     closest_terms = []
 
     for term in domain_terms_dict[keyword_type]:
@@ -444,7 +444,7 @@ def levenshtein_distance(keyword, keyword_type, preferences):
         elif distance == min_distance:
             closest_terms.append(term)
 
-    if min_distance <= levenshtein_distance:
+    if min_distance <= levenshtein_dis:
         preferences[keyword_type] = random.choice(closest_terms)
         return preferences, ''
     else:
@@ -468,42 +468,43 @@ def update_preferences(preferences, current_state):
 # @misspelling: str, the misspelled word, only needed if @current_state is 2 or 7
 # @restaurant: darray, the restaurant suggested by the system, only needed if @current_state = 9 or 10
 # @detail: string, the requested detail of the restaurant, only needed if @current_state = 10, can be either "phone","addr","postcode"
-def get_system_message(current_state, misspelling='', restaurant=None, detail=None):
+def print_system_message(current_state, misspelling='', restaurant=None, detail=None):
+    out = ""
     print(current_state)
     match current_state:
         case 1:
-            return "Hello, welcome to the Group 30 restaurant recommendation system. You can ask for restaurants by area, price range or food type. How may I help you?"
+            out =  "Hello, welcome to the Group 30 restaurant recommendation system. You can ask for restaurants by area, price range or food type. How may I help you?"
 
         case 2:
-            return f"Could not recognize word '{misspelling}', please rephrase your input!"
+            out = f"Could not recognize word '{misspelling}', please rephrase your input!"
 
         case 3:
-            return "What part of town do you have in mind?"
+            out = "What part of town do you have in mind?"
 
         case 4:
-            return "Would you like something in the cheap , moderate , or expensive price range?"
+            out = "Would you like something in the cheap , moderate , or expensive price range?"
 
         case 5:
-            return "What kind of food would you like?"
+            out = "What kind of food would you like?"
 
         case 6:
             area = f" in the {preferenceField['area']} part of the town" if preferenceField['area'] is not None else ""
             pricerange = preferenceField['pricerange'] if preferenceField['pricerange'] is not None else ""
             food = f" serving {preferenceField['food']} food" if preferenceField['food'] is not None else ""
-            return f"Sorry, but there is no {pricerange} restaurant{area}{food}."
+            out = f"Sorry, but there is no {pricerange} restaurant{area}{food}."
 
         case 7:
-            return f"Could not recognize word '{misspelling}', please rephrase your input!"
+            out = f"Could not recognize word '{misspelling}', please rephrase your input!"
 
         case 8:
-            return "Please confirm that you want to leave"
+            out = "Please confirm that you want to leave"
 
         case 9:
             if optionalPreferences['touristic'] is None:
-                return 'Do you have additional requirements (should the restaurant be touristic, suitable for ' \
+                out = 'Do you have additional requirements (should the restaurant be touristic, suitable for ' \
                        'children, romantic or have assigned seats) '
             else:
-                return 'Sorry, there is no restaurant fullfilling your additional preferences. Please choose other ' \
+                out = 'Sorry, there is no restaurant fullfilling your additional preferences. Please choose other ' \
                       'additional requirements'
 
         case 10:
@@ -511,17 +512,16 @@ def get_system_message(current_state, misspelling='', restaurant=None, detail=No
             area = f" in the {restaurant[2]} part of the town" if restaurant[2] != '' else ""
             pricerange = restaurant[1] if restaurant[1] != '' else ""
             food = f" serving {restaurant[3]} food" if restaurant[3] != '' else ""
-            res = f"{name} is a nice {pricerange} restaurant{area}{food}"
+            out = f"{name} is a nice {pricerange} restaurant{area}{food}"
             #print(optionalPreferences)
             if optionalPreferences['touristic'] == True:
-                res += f"\n {name} is touristic because it has good and popular food."
+                out += f"\n {name} is touristic because it has good and popular food."
             if optionalPreferences['assigned_seats'] == True:
-                res += f"\n {name} is a busy restaurant, therefore the waiter will decide where you sit."
+                out += f"\n {name} is a busy restaurant, therefore the waiter will decide where you sit."
             if optionalPreferences['children'] == True:
-                res += f"\nAt {name} people do not tend to stay there for a long time. Therefore your children will not get bored waiting for the food."
+                out += f"\nAt {name} people do not tend to stay there for a long time. Therefore your children will not get bored waiting for the food."
             if optionalPreferences['romantic'] == True:
-                res += f"\nYou can have a lovely date for a longer time at {name}"
-            return res
+                out += f"\nYou can have a lovely date for a longer time at {name}"
         case 11:
             phone = ''
             addr = ''
@@ -534,13 +534,16 @@ def get_system_message(current_state, misspelling='', restaurant=None, detail=No
                 postcode = f', the post code is {restaurant[6]}'
             if detail == 'unknown':
 
-                return f"Please specify whether you want the phone number, the address, or the postcode"
-            return f'Sure{phone}{addr}{postcode}'
+                out = f"Please specify whether you want the phone number, the address, or the postcode"
+            out = f'Sure{phone}{addr}{postcode}'
 
         case 12:
-            return 'Goodbye. Have a nice day!'
+            out = 'Goodbye. Have a nice day!'
 
-    return None
+    if caps_on:
+        print(out.upper())
+    else:
+        print(out)
 
 def main():
     #print("Hello, welcome to the Group 30 restaurant recommendation system. You can ask for restaurants by area, price range or food type. How may I help you?")
@@ -553,11 +556,7 @@ def main():
 
     vectorizer, clf = train_ml_model()
 
-    out = get_system_message(current_state)
-    if caps_on:
-        print(out.upper())
-    else:
-        print(out)
+    print_system_message(current_state)
     
     # Restaurants that fit the preferences
     candidate_restaurants = []
@@ -570,13 +569,12 @@ def main():
         if dialog_restart_on and restart:
             current_state = 1
             next_state = 1
-            out = get_system_message(current_state)
+
             if caps_on:
                 print("Restarting conversation...".upper())
-                print(out.upper())
             else:
                 print("Restarting conversation...")
-                print(out)
+            print_system_message()
             preferenceField['area'] = None
             preferenceField['pricerange'] = None
             preferenceField['food'] = None
@@ -633,11 +631,8 @@ def main():
             if detail == '':
                 detail = 'unknown'
 
-        out = get_system_message(next_state,restaurant=current_restaurant, detail=detail)
-        if caps_on:
-            print(out.upper())
-        else:
-            print(out)
+        print_system_message(next_state, restaurant=current_restaurant, detail=detail)
+
 
 if __name__ == "__main__":
     main()
