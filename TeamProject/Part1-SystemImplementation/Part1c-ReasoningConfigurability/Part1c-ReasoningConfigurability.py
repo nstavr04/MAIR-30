@@ -54,6 +54,14 @@ preferenceField = {
     'food': None
 }
 
+optionalPreferences = {
+    'touristic':None,
+    'assigned_seats':None,
+    'children':None,
+    'romantic':None
+}
+
+
 # Possibly more food types, need to check
 domain_terms_dict = {
     'pricerange': ['cheap', 'moderate', 'expensive'],
@@ -70,7 +78,7 @@ domain_terms_dict = {
 
 # Configurations for the dialog restaurant recommendation system
 dialog_restart_on = True
-ASR_on = True
+ASR_on = False
 
 # State transistion function to change the state
 # @cur_state: int, the current state
@@ -121,25 +129,41 @@ def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
         case 8:
             # Check if user really wants to leave
             if cur_dialog_act in ['bye', 'thankyou', 'ack', 'confirm','affirm']:
-                return 11
+                return 12
             return 6
-        
+
         case 9:
-            # Check if user wants a restaurant suggestion
-            if cur_dialog_act == 'request':
+            update_opt_requirements(cur_utterance)
+            restaurants = find_restaurants()
+            restaurants = filter_restaurants_opt_requirements(restaurants)
+            if len(restaurants) > 0:
                 return 10
-            if cur_dialog_act in ['bye', 'thankyou']:
-                return 11
             return 9
         
         case 10:
-            # Check if user doesn't want any other restaurant detail
-            if cur_dialog_act in ['bye', 'thankyou']:
+            # Check if user wants a restaurant suggestion
+            if cur_dialog_act == 'request':
                 return 11
+            if cur_dialog_act in ['bye', 'thankyou']:
+                return 12
             return 10
         
         case 11:
+            # Check if user doesn't want any other restaurant detail
+            if cur_dialog_act in ['bye', 'thankyou']:
+                return 12
+            return 11
+        
+        case 12:
             return -1
+
+# function to update the additional preferences
+# @cur_utterance: string, the current utterance provided by the user
+def update_opt_requirements(cur_utterance):
+    optionalPreferences['touristic'] = True if 'touristic' in cur_utterance else False
+    optionalPreferences['assigned_seats'] = True if 'seats' in cur_utterance else False
+    optionalPreferences['children'] = True if 'child' in cur_utterance else False
+    optionalPreferences['romantic'] = True if 'romantic' in cur_utterance else False
 
 # Function to perform checks on the presence of the preferences
 # For the transition function (see model diagram -> long column of diamonds)
@@ -160,23 +184,42 @@ def checkPreferences():
     if preferenceField['food'] == None:
         return 5
     
-    # Transite to state 6 to suggest a restaurant
+    # Transite to state 9 to suggest a restaurant
     return 9
 
 # Lookup function to find restaurants fitting the criteria in the .csv file
 # Attributes should be provided as string
 # @return is a numpy array
-def find_restaurants(area='X', price='X', food='X', path='restaurant_info.csv'):
-    restaurants = pd.read_csv(path)
+def find_restaurants(area='X', price='X', food='X', path='restaurant_info_extended.csv'):
+    restaurants = pd.read_csv('restaurant_info_extended.csv',sep=';')
 
-    if area != 'X' and area is not None:
-        restaurants = restaurants[restaurants['area'] == area]
-    if price != 'X' and price is not None:
-        restaurants = restaurants[restaurants['pricerange'] == price]
-    if food != 'X' and food is not None:
-        restaurants = restaurants[restaurants['food'] == food]
+    if preferenceField['area'] != 'X' and preferenceField['area'] is not None:
+        restaurants = restaurants[restaurants['area'] == preferenceField['area']]
+    if preferenceField['pricerange'] != 'X' and preferenceField['pricerange'] is not None:
+        restaurants = restaurants[restaurants['pricerange'] == preferenceField['pricerange']]
+    if preferenceField['food'] != 'X' and preferenceField['food'] is not None:
+        restaurants = restaurants[restaurants['food'] == preferenceField['food']]
 
     return restaurants.values
+
+# Lookup function to filter restaurants fitting the additional requirements
+# restaurants is a numpy array, requirements should be provided as boolean
+# @return is a numpy array
+def filter_restaurants_opt_requirements(restaurants, touristic=False, assigned_seats=False, children=False, romantic=False):
+
+    if optionalPreferences['touristic']:
+        restaurants = restaurants[restaurants[:,1] == 'cheap']
+        restaurants = restaurants[restaurants[:,7] == 'good']
+        restaurants = restaurants[restaurants[:,3] != 'romanian']
+    if optionalPreferences['assigned_seats']:
+        restaurants = restaurants[restaurants[:,8] == 'busy']
+    if optionalPreferences['children']:
+        restaurants = restaurants[restaurants[:,9] != 'long stay']
+    if optionalPreferences['romantic']:
+        restaurants = restaurants[restaurants[:,8] != 'busy']
+        restaurants = restaurants[restaurants[:,9] == 'long stay']
+
+    return restaurants
 
 # Function to randomly choose a restaurant
 # @parameters:
@@ -454,13 +497,31 @@ def print_system_message(current_state, misspelling='', restaurant=None, detail=
             print("Please confirm that you want to leave")
 
         case 9:
+            if optionalPreferences['touristic'] is None:
+                print('Do you have additional requirements (should the restaurant be touristic, suitable for '
+                      'children, romantic or have assigned seats)')
+            else:
+                print('Sorry, there is no restaurant fullfilling your additional preferences. Please choose other '
+                      'additional requirements')
+
+        case 10:
             name = restaurant[0]
             area = f" in the {restaurant[2]} part of the town" if restaurant[2] != '' else ""
             pricerange = restaurant[1] if restaurant[1] != '' else ""
             food = f" serving {restaurant[3]} food" if restaurant[3] != '' else ""
             print(f"{name} is a nice {pricerange} restaurant{area}{food}")
+            print(optionalPreferences)
+            if optionalPreferences['touristic'] == True:
+                print(f"{name} is touristic because it has good and popular food.")
+            if optionalPreferences['assigned_seats'] == True:
+                print(f"{name} is a busy restaurant, therefore the waiter will decide where you sit.")
+            if optionalPreferences['children'] == True:
+                print(
+                    f"At {name} people do not tend to stay there for a long time. Therefore your children will not get bored waiting for the food.")
+            if optionalPreferences['romantic'] == True:
+                print(f"You can have a lovely date for a longer time at {name}")
 
-        case 10:
+        case 11:
             phone = ''
             addr = ''
             postcode = ''
@@ -475,7 +536,7 @@ def print_system_message(current_state, misspelling='', restaurant=None, detail=
                 return
             print(f'Sure{phone}{addr}{postcode}')
 
-        case 11:
+        case 12:
             print('Goodbye. Have a nice day!')
 
     return None
@@ -505,6 +566,10 @@ def main():
             preferenceField['area'] = None
             preferenceField['pricerange'] = None
             preferenceField['food'] = None
+            optionalPreferences['romantic'] = None
+            optionalPreferences['children'] = None
+            optionalPreferences['touristic'] = None
+            optionalPreferences['assigned_seats'] = None
             candidate_restaurants = []
             suggested_restaurants = [[None]]
             current_restaurant = None
@@ -512,7 +577,7 @@ def main():
             next_state = 1
             restart = False
 
-        if next_state == 11:
+        if next_state == 12:
             break
     
         current_state = next_state
@@ -531,10 +596,11 @@ def main():
         if next_state == 2 or next_state == 7: #this case is handled inside of state_transition_function
             continue
         # If we want to suggest a restaurant, we have to find one
-        if next_state == 9:
+        if next_state == 10:
             # If candidate restaurants not computed yet, find them now
             if len(candidate_restaurants) == 0:
                 candidate_restaurants = find_restaurants(preferenceField['area'], preferenceField['pricerange'], preferenceField['food'])
+                candidate_restaurants = filter_restaurants_opt_requirements(candidate_restaurants)
             # If not all candidate_restaurants were suggested, choose new restaurant to suggest
             if len(candidate_restaurants) > len(suggested_restaurants) or suggested_restaurants[0][0] is None:
                 current_restaurant = choose_restaurant(candidate_restaurants, np.array(suggested_restaurants))
@@ -544,7 +610,7 @@ def main():
                     suggested_restaurants.append(current_restaurant)
 
         detail = ''
-        if next_state == 10:
+        if next_state == 11:
             # Check what detail is requested
             if 'phone' in utterance or 'number' in utterance:
                 detail = 'phone'
