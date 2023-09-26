@@ -12,7 +12,7 @@ def ml_decision_tree_classifier(x_train, y_train, x_test, y_test):
     x_train_bow = vectorizer.fit_transform(x_train)
     x_test_bow = vectorizer.transform(x_test)
 
-    clf = DecisionTreeClassifier(random_state=0)
+    clf = DecisionTreeClassifier()
     clf.fit(x_train_bow, y_train)
 
     y_pred = clf.predict(x_test_bow)
@@ -32,7 +32,7 @@ def ml_decision_tree_classifier(x_train, y_train, x_test, y_test):
 def ml_decision_tree_classifier_prompt(x_train, y_train):
     vectorizer = CountVectorizer()
     x_train_bow = vectorizer.fit_transform(x_train)
-    clf = DecisionTreeClassifier(random_state=0)
+    clf = DecisionTreeClassifier()
     clf.fit(x_train_bow, y_train)
 
     while True:
@@ -46,6 +46,15 @@ def ml_decision_tree_classifier_prompt(x_train, y_train):
 
         print(f"Predicted dialog act label: {predicted_label}")
 
+#function to get (and train) the logisitc regression classifier
+def get_decision_tree_classifier(x_train,y_train):
+    vectorizer = CountVectorizer()
+    x_train_bow = vectorizer.fit_transform(x_train)
+
+    clf = DecisionTreeClassifier(random_state=0, max_iter=1000)
+    clf.fit(x_train_bow, y_train)
+    return clf
+
 
 ############################## ML Decision Tree Classifier #############################
 
@@ -56,7 +65,7 @@ def ml_logistic_regression_classifier(x_train, y_train, x_test, y_test):
     x_train_bow = vectorizer.fit_transform(x_train)
     x_test_bow = vectorizer.transform(x_test)
 
-    clf = LogisticRegression(random_state=0, max_iter=1000)
+    clf = LogisticRegression(max_iter=1000)
     clf.fit(x_train_bow, y_train)
 
     y_pred = clf.predict(x_test_bow)
@@ -77,7 +86,7 @@ def ml_logistic_regression_classifier_prompt(x_train, y_train):
     vectorizer = CountVectorizer()
     x_train_bow = vectorizer.fit_transform(x_train)
 
-    clf = LogisticRegression(random_state=0, max_iter=1000)
+    clf = LogisticRegression(max_iter=1000)
     clf.fit(x_train_bow, y_train)
 
     while True:
@@ -90,5 +99,15 @@ def ml_logistic_regression_classifier_prompt(x_train, y_train):
         predicted_label = clf.predict(utterance_bow)[0]
 
         print(f"Predicted dialog act label: {predicted_label}")
+
+#function to get (and train) the logisitc regression classifier
+def get_logistic_regression_classifier(x_train,y_train):
+    vectorizer = CountVectorizer()
+    x_train_bow = vectorizer.fit_transform(x_train)
+
+    clf = LogisticRegression(max_iter=1000)
+    clf.fit(x_train_bow, y_train)
+    return clf
+
 
 ########################### ML Logistic Regression Classifier ##########################

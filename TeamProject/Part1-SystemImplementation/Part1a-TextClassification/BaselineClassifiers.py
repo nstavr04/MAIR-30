@@ -21,6 +21,13 @@ def baseline_majority(y_test, majority_class='inform'):
     return accuracy, c_report
 ####################### Baseline majority class (inform label) #######################
 
+####################### Baseline majority class prediction ###########################
+#predicts the classes of the elements in x_test using the baseline majority class model
+def baseline_majority_predict(x_test):
+    y_pred = ['inform' for x in x_test]
+    return y_pred
+####################### Baseline majority class prediction ###########################
+
 ############################## Baseline keyword matching #############################
 # The order of the rules plays a big role in the accuracy
 # I tried to put the class labels first that appear the most times in the dataset. (Hence is makes sense to have inform as first rule)
@@ -92,3 +99,17 @@ def baseline_prompt():
 
         print(f"Predicted dialog act label: {predicted_label}")
 ############################## Baseline prompt predictions #############################
+
+####################### Baseline rules prediction ###########################
+#predicts the classes of the elements in x_test using the baseline rulse-based model
+def baseline_predict(x_test):
+    y_pred = []
+    for utterance in x_test:
+        predicted_label = 'inform'
+        for label, keywords in rules.items():
+            if any(keyword in utterance for keyword in keywords):
+                predicted_label = label
+                break
+        y_pred.append(predicted_label)
+    return y_pred
+####################### Baseline majority class prediction ###########################

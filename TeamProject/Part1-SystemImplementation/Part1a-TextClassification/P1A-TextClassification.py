@@ -1,14 +1,6 @@
-import numpy as np
-import pandas as pd
 from sklearn.model_selection import train_test_split
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score
-from sklearn.metrics import classification_report
 from DataPreparation import get_data
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
-import matplotlib.pyplot as plt
+
 
 from BaselineClassifiers import baseline_majority
 from BaselineClassifiers import baseline_keyword
@@ -29,9 +21,9 @@ x,y,x_deduplicated,y_deduplicated = get_data()
 # Splitting the dataset into training and test sets
 # 85% of the data is used for training and 15% for testing
 # random state is like seed I think to just keep the same split and shuffling
-x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.15, random_state=11, shuffle=True)
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.15, shuffle=True)
 
-x_train_unique, x_test_unique, y_train_unique, y_test_unique = train_test_split(x_deduplicated, y_deduplicated, test_size=0.15, random_state=11, shuffle=True)
+x_train_unique, x_test_unique, y_train_unique, y_test_unique = train_test_split(x_deduplicated, y_deduplicated, test_size=0.15, shuffle=True)
 
 
 # Scikit needs numpy
@@ -41,6 +33,7 @@ y_train_unique_np = y_train_unique.values
 x_test_unique_np = x_test_unique.values
 y_test_unique_np = y_test_unique.values
 
+#function to print the system output with respect to the choice of the user
 def print_system_output(choice):
     if choice == '1':
         baseline_majority_accuracy, c_report = baseline_majority(y_test)
@@ -114,18 +107,22 @@ def print_system_output(choice):
     else:
         print("Invalid choice. Please try again.")
 
+#function to print the menu of the application
+def print_menu():
+    print("\nChoose an option:")
+    print("1. Run Baseline Majority Class")
+    print("2. Run Baseline Keyword Matching")
+    print("3. Run Baseline Keyword Matching Prompt Predictions")
+    print("4. Run ML Decision Tree Classifier Algorithm (with Duplicates)")
+    print("5. Run ML Decision Tree Classifier Algorithm (without Duplicates)")
+    print("6. Run ML Logistic Regression Classifier Algorithm (with Duplicates)")
+    print("7. Run ML Logistic Regression Classifier Algorithm (without Duplicates)")
+    print("8. Run everything - Classification Reports")
+    print("0. Exit")
+
 def main_menu():
     while True:
-        print("\nChoose an option:")
-        print("1. Run Baseline Majority Class")
-        print("2. Run Baseline Keyword Matching")
-        print("3. Run Baseline Keyword Matching Prompt Predictions")
-        print("4. Run ML Decision Tree Classifier Algorithm (with Duplicates)")
-        print("5. Run ML Decision Tree Classifier Algorithm (without Duplicates)")
-        print("6. Run ML Logistic Regression Classifier Algorithm (with Duplicates)")
-        print("7. Run ML Logistic Regression Classifier Algorithm (without Duplicates)")
-        print("8. Run everything - Classification Reports")
-        print("0. Exit")
+        print_menu()
 
         choice = input("Enter your choice: ")
 
