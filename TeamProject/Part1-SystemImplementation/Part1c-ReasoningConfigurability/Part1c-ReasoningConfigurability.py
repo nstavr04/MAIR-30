@@ -80,6 +80,7 @@ domain_terms_dict = {
 dialog_restart_on = True
 ASR_on = False
 caps_on = True
+levenshtein_distance = 3
 
 # State transistion function to change the state
 # @cur_state: int, the current state
@@ -396,7 +397,7 @@ def check_misspelling_or_preferences(cur_utterance, cur_state):
     return preferences
 
 def levenshtein_distance_single(keyword):
-    min_distance = 4
+    min_distance = levenshtein_distance + 1
     closest_terms = []
     # Since it's a single word we need to check for all keyword types
     for keyword_type in domain_terms_dict.keys():
@@ -411,13 +412,13 @@ def levenshtein_distance_single(keyword):
                 closest_terms.append(term)
     
         # print(closest_terms, min_distance)
-        if min_distance <= 3:
+        if min_distance <= levenshtein_distance:
             return random.choice(closest_terms), keyword_type
         
     return None, None
 
 def levenshtein_distance_regex(keyword, keyword_type):
-    min_distance = 4
+    min_distance = levenshtein_distance + 1
     closest_terms = []
     for term in domain_terms_dict[keyword_type]:
         distance = Levenshtein.distance(keyword, term)
@@ -426,13 +427,13 @@ def levenshtein_distance_regex(keyword, keyword_type):
             closest_terms = [term]
         elif distance == min_distance:
             closest_terms.append(term)
-    if min_distance <= 3:
+    if min_distance <= levenshtein_distance:
         return random.choice(closest_terms)
     else:
         return None
 
 def levenshtein_distance(keyword, keyword_type, preferences):
-    min_distance = 4
+    min_distance = levenshtein_distance + 1
     closest_terms = []
 
     for term in domain_terms_dict[keyword_type]:
@@ -443,7 +444,7 @@ def levenshtein_distance(keyword, keyword_type, preferences):
         elif distance == min_distance:
             closest_terms.append(term)
 
-    if min_distance <= 3:
+    if min_distance <= levenshtein_distance:
         preferences[keyword_type] = random.choice(closest_terms)
         return preferences, ''
     else:
