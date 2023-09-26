@@ -122,12 +122,15 @@ def print_menu():
 
 def main_menu():
     while True:
+        #print possible options
         print_menu()
 
         choice = input("Enter your choice: ")
 
+        #print system output to user request
         print_system_output(choice)
 
+        #user wants to leave
         if choice == 0:
             break
 
