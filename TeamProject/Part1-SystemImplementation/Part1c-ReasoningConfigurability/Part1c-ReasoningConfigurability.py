@@ -11,6 +11,7 @@ import random
 import string
 import re
 import ASR_userUtterance
+import Leven_distance
 
 # Load our configurations
 with open("configurations.json", "r") as f:
@@ -280,7 +281,7 @@ def keyword_matching(utterance,cur_state):
     if len(tokens) == 1:
         token = tokens[0]
         if token not in ignore_words:
-            closest_term, pref_type = levenshtein_distance_single(token)
+            closest_term, pref_type = Leven_distance.levenshtein_distance_single(token, domain_terms_dict, levenshtein_dis)
             # They if basically means that closest_term is not None
             if closest_term:
                 if closest_term == 'any':
@@ -297,9 +298,9 @@ def keyword_matching(utterance,cur_state):
                     # Go through all the subgroups of the regex
                     first_group = match.group(1)
                     second_group = match.group(2)
+                    third_group = None
                     # Third group is to catch cases of "word + in the + area"
                     if len(match.groups()) == 3:
-                        third_group = None
                         third_group = match.group(3)
                     if first_group == "any":
                         if second_group in {"food", "restaurant", "place", "restaurantin", "type"}:
@@ -310,12 +311,12 @@ def keyword_matching(utterance,cur_state):
                             keywords['area'] = "X"
 
                     elif third_group:
-                        closest_term = levenshtein_distance_regex(third_group, pref_type)
+                        closest_term = Leven_distance.levenshtein_distance_regex(third_group, pref_type, domain_terms_dict, levenshtein_dis)
                         # If we found a close term we save it as a keyword
                         if closest_term:
                             keywords[pref_type] = closest_term
                     elif first_group and first_group not in ignore_words:
-                        closest_term = levenshtein_distance_regex(first_group, pref_type)
+                        closest_term = Leven_distance.levenshtein_distance_regex(first_group, pref_type, domain_terms_dict, levenshtein_dis)
                         # If we found a close term we save it as a keyword
                         if closest_term:
                             keywords[pref_type] = closest_term
@@ -341,7 +342,7 @@ def check_misspelling_or_preferences(cur_utterance, cur_state):
     for keyword_type, keyword in keywords.items():
 
         if keyword is not None and keyword != 'X':
-            preferences, misspelling = levenshtein_distance(keyword, keyword_type, preferences)
+            preferences, misspelling = Leven_distance.levenshtein_distance(keyword, keyword_type, preferences, domain_terms_dict, levenshtein_dis)
             if len(misspelling) > 0:
                 return misspelling
         
@@ -349,58 +350,6 @@ def check_misspelling_or_preferences(cur_utterance, cur_state):
             preferences[keyword_type] = 'X'
 
     return preferences
-
-def levenshtein_distance_single(keyword):
-    min_distance = levenshtein_dis + 1
-    closest_terms = []
-    # Since it's a single word we need to check for all keyword types
-    for keyword_type in domain_terms_dict.keys():
-        for term in domain_terms_dict[keyword_type]:
-            distance = Levenshtein.distance(keyword, term)
-            if distance < min_distance:
-                min_distance = distance
-                closest_terms = [term]
-            elif distance == min_distance:
-                closest_terms.append(term)
-    
-        if min_distance <= levenshtein_dis:
-            return random.choice(closest_terms), keyword_type
-        
-    return None, None
-
-def levenshtein_distance_regex(keyword, keyword_type):
-    min_distance = levenshtein_dis + 1
-    closest_terms = []
-    for term in domain_terms_dict[keyword_type]:
-        distance = Levenshtein.distance(keyword, term)
-        if distance < min_distance:
-            min_distance = distance
-            closest_terms = [term]
-        elif distance == min_distance:
-            closest_terms.append(term)
-    if min_distance <= levenshtein_dis:
-        return random.choice(closest_terms)
-    else:
-        return None
-
-def levenshtein_distance(keyword, keyword_type, preferences):
-    min_distance = levenshtein_dis + 1
-    closest_terms = []
-
-    for term in domain_terms_dict[keyword_type]:
-        distance = Levenshtein.distance(keyword, term)
-        if distance < min_distance:
-            min_distance = distance
-            closest_terms = [term]
-        elif distance == min_distance:
-            closest_terms.append(term)
-
-    if min_distance <= levenshtein_dis:
-        preferences[keyword_type] = random.choice(closest_terms)
-        return preferences, ''
-    else:
-        print("Big mispelling, need an according error message")
-        return preferences, keyword
 
 def update_preferences(preferences, current_state):
     match current_state:
@@ -507,6 +456,21 @@ def reset_conversation():
     optionalPreferences['touristic'] = None
     optionalPreferences['assigned_seats'] = None
 
+def identify_details(current_state, utterance):
+    detail = ''
+    if current_state == 11:
+        # Check what detail is requested
+        if 'phone' in utterance or 'number' in utterance:
+            detail = 'phone'
+        if 'address' in utterance or 'where' in utterance:
+            detail += 'addr'
+        if 'post' in utterance or 'code' in utterance:
+            detail += 'postcode'
+        if detail == '':
+            detail = 'unknown'    
+    
+    return detail
+
 def main():
 
     restart_flag = False
@@ -567,18 +531,7 @@ def main():
                 else:
                     suggested_restaurants.append(current_restaurant)
 
-        detail = ''
-        if current_state == 11:
-            # Check what detail is requested
-            if 'phone' in utterance or 'number' in utterance:
-                detail = 'phone'
-            if 'address' in utterance or 'where' in utterance:
-                detail += 'addr'
-            if 'post' in utterance or 'code' in utterance:
-                detail += 'postcode'
-            if detail == '':
-                detail = 'unknown'
-
+        detail = identify_details(current_state, utterance)
         print_system_message(current_state, restaurant=current_restaurant, detail=detail)
 
 if __name__ == "__main__":
