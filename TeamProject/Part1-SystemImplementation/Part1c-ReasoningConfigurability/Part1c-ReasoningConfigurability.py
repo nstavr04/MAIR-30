@@ -103,7 +103,7 @@ def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
 
             if type(preferences_or_misspelling) == str:
                 # Print error message here because misspelled word is known
-                print_system_message(2, misspelling=preferences_or_misspelling)
+                print(get_system_message(2, misspelling=preferences_or_misspelling))
                 return 2
 
             update_preferences(preferences_or_misspelling, current_state=cur_state)
@@ -121,7 +121,7 @@ def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
             
             if type(preferences_or_misspelling) == str:
                 # Print error message here because misspelled word is known
-                print_system_message(7, misspelling=preferences_or_misspelling)
+                print(get_system_message(7, misspelling=preferences_or_misspelling))
                 return 7
 
             update_preferences(preferences_or_misspelling, current_state=cur_state)
