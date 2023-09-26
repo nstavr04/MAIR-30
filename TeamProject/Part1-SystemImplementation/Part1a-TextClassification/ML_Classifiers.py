@@ -53,7 +53,7 @@ def get_decision_tree_classifier(x_train,y_train):
 
     clf = DecisionTreeClassifier()
     clf.fit(x_train_bow, y_train)
-    return clf
+    return clf,vectorizer
 
 
 ############################## ML Decision Tree Classifier #############################
@@ -107,7 +107,7 @@ def get_logistic_regression_classifier(x_train,y_train):
 
     clf = LogisticRegression(max_iter=1000)
     clf.fit(x_train_bow, y_train)
-    return clf
+    return clf,vectorizer
 
 
 ########################### ML Logistic Regression Classifier ##########################
