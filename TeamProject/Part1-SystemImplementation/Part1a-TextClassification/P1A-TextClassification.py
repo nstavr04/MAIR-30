@@ -36,9 +36,9 @@ y_deduplicated = df_deduplicated['label']
 # Splitting the dataset into training and test sets
 # 85% of the data is used for training and 15% for testing
 # random state is like seed I think to just keep the same split and shuffling
-x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.15, random_state=11, shuffle=True)
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.15, shuffle=True)
 
-x_train_unique, x_test_unique, y_train_unique, y_test_unique = train_test_split(x_deduplicated, y_deduplicated, test_size=0.15, random_state=11, shuffle=True)
+x_train_unique, x_test_unique, y_train_unique, y_test_unique = train_test_split(x_deduplicated, y_deduplicated, test_size=0.15, shuffle=True)
 
 # print(x_train.shape)
 # print(x_test.shape)
@@ -163,7 +163,7 @@ def ml_decision_tree_classifier(x_train, y_train, x_test, y_test):
     x_train_bow = vectorizer.fit_transform(x_train)
     x_test_bow = vectorizer.transform(x_test)
     
-    clf = DecisionTreeClassifier(random_state=0)
+    clf = DecisionTreeClassifier()
     clf.fit(x_train_bow, y_train)
 
     y_pred = clf.predict(x_test_bow)
@@ -183,7 +183,7 @@ def ml_decision_tree_classifier_prompt(x_train, y_train):
 
     vectorizer = CountVectorizer()
     x_train_bow = vectorizer.fit_transform(x_train)
-    clf = DecisionTreeClassifier(random_state=0)
+    clf = DecisionTreeClassifier()
     clf.fit(x_train_bow, y_train)
     
     while True:
@@ -207,7 +207,7 @@ def ml_logistic_regression_classifier(x_train, y_train, x_test, y_test):
     x_train_bow = vectorizer.fit_transform(x_train)
     x_test_bow = vectorizer.transform(x_test)
     
-    clf = LogisticRegression(random_state=0, max_iter=1000)
+    clf = LogisticRegression(max_iter=1000)
     clf.fit(x_train_bow, y_train)
     
     y_pred = clf.predict(x_test_bow)
@@ -228,7 +228,7 @@ def ml_logistic_regression_classifier_prompt(x_train, y_train):
     vectorizer = CountVectorizer()
     x_train_bow = vectorizer.fit_transform(x_train)
     
-    clf = LogisticRegression(random_state=0, max_iter=1000)
+    clf = LogisticRegression( max_iter=1000)
     clf.fit(x_train_bow, y_train)
     
     while True:
