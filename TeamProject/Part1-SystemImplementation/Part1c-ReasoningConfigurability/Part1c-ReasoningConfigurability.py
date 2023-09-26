@@ -79,6 +79,7 @@ domain_terms_dict = {
 # Configurations for the dialog restaurant recommendation system
 dialog_restart_on = True
 ASR_on = False
+caps_on = True
 
 # State transistion function to change the state
 # @cur_state: int, the current state
@@ -466,61 +467,60 @@ def update_preferences(preferences, current_state):
 # @misspelling: str, the misspelled word, only needed if @current_state is 2 or 7
 # @restaurant: darray, the restaurant suggested by the system, only needed if @current_state = 9 or 10
 # @detail: string, the requested detail of the restaurant, only needed if @current_state = 10, can be either "phone","addr","postcode"
-def print_system_message(current_state, misspelling='', restaurant=None, detail=None):
+def get_system_message(current_state, misspelling='', restaurant=None, detail=None):
     print(current_state)
     match current_state:
         case 1:
-            print("Error detected, System in state 1 [Greeting]")
+            return "Hello, welcome to the Group 30 restaurant recommendation system. You can ask for restaurants by area, price range or food type. How may I help you?"
 
         case 2:
-            print(f"Could not recognize word '{misspelling}', please rephrase your input!")
+            return f"Could not recognize word '{misspelling}', please rephrase your input!"
 
         case 3:
-            print("What part of town do you have in mind?")
+            return "What part of town do you have in mind?"
 
         case 4:
-            print("Would you like something in the cheap , moderate , or expensive price range?")
+            return "Would you like something in the cheap , moderate , or expensive price range?"
 
         case 5:
-            print("What kind of food would you like?")
+            return "What kind of food would you like?"
 
         case 6:
             area = f" in the {preferenceField['area']} part of the town" if preferenceField['area'] is not None else ""
             pricerange = preferenceField['pricerange'] if preferenceField['pricerange'] is not None else ""
             food = f" serving {preferenceField['food']} food" if preferenceField['food'] is not None else ""
-            print(f"Sorry, but there is no {pricerange} restaurant{area}{food}.")
+            return f"Sorry, but there is no {pricerange} restaurant{area}{food}."
 
         case 7:
-            print(f"Could not recognize word '{misspelling}', please rephrase your input!")
+            return f"Could not recognize word '{misspelling}', please rephrase your input!"
 
         case 8:
-            print("Please confirm that you want to leave")
+            return "Please confirm that you want to leave"
 
         case 9:
             if optionalPreferences['touristic'] is None:
-                print('Do you have additional requirements (should the restaurant be touristic, suitable for '
-                      'children, romantic or have assigned seats)')
+                return 'Do you have additional requirements (should the restaurant be touristic, suitable for ' \
+                       'children, romantic or have assigned seats) '
             else:
-                print('Sorry, there is no restaurant fullfilling your additional preferences. Please choose other '
-                      'additional requirements')
+                return 'Sorry, there is no restaurant fullfilling your additional preferences. Please choose other ' \
+                      'additional requirements'
 
         case 10:
             name = restaurant[0]
             area = f" in the {restaurant[2]} part of the town" if restaurant[2] != '' else ""
             pricerange = restaurant[1] if restaurant[1] != '' else ""
             food = f" serving {restaurant[3]} food" if restaurant[3] != '' else ""
-            print(f"{name} is a nice {pricerange} restaurant{area}{food}")
-            print(optionalPreferences)
+            res = f"{name} is a nice {pricerange} restaurant{area}{food}"
+            #print(optionalPreferences)
             if optionalPreferences['touristic'] == True:
-                print(f"{name} is touristic because it has good and popular food.")
+                res += f"\n {name} is touristic because it has good and popular food."
             if optionalPreferences['assigned_seats'] == True:
-                print(f"{name} is a busy restaurant, therefore the waiter will decide where you sit.")
+                res += f"\n {name} is a busy restaurant, therefore the waiter will decide where you sit."
             if optionalPreferences['children'] == True:
-                print(
-                    f"At {name} people do not tend to stay there for a long time. Therefore your children will not get bored waiting for the food.")
+                res += f"\nAt {name} people do not tend to stay there for a long time. Therefore your children will not get bored waiting for the food."
             if optionalPreferences['romantic'] == True:
-                print(f"You can have a lovely date for a longer time at {name}")
-
+                res += f"\nYou can have a lovely date for a longer time at {name}"
+            return res
         case 11:
             phone = ''
             addr = ''
@@ -532,17 +532,17 @@ def print_system_message(current_state, misspelling='', restaurant=None, detail=
             if 'postcode' in detail:
                 postcode = f', the post code is {restaurant[6]}'
             if detail == 'unknown':
-                print(f"Please specify whether you want the phone number, the address, or the postcode")
-                return
-            print(f'Sure{phone}{addr}{postcode}')
+
+                return f"Please specify whether you want the phone number, the address, or the postcode"
+            return f'Sure{phone}{addr}{postcode}'
 
         case 12:
-            print('Goodbye. Have a nice day!')
+            return 'Goodbye. Have a nice day!'
 
     return None
 
 def main():
-    print("Hello, welcome to the Group 30 restaurant recommendation system. You can ask for restaurants by area, price range or food type. How may I help you?")
+    #print("Hello, welcome to the Group 30 restaurant recommendation system. You can ask for restaurants by area, price range or food type. How may I help you?")
 
     restart = False
 
@@ -551,6 +551,12 @@ def main():
     next_state = 1
 
     vectorizer, clf = train_ml_model()
+
+    out = get_system_message(current_state)
+    if caps_on:
+        print(out.upper())
+    else:
+        print(out)
     
     # Restaurants that fit the preferences
     candidate_restaurants = []
@@ -561,8 +567,15 @@ def main():
     while True:
 
         if dialog_restart_on and restart:
-            print("Restarting conversation...")
-            print("Hello, welcome to the Group 30 restaurant recommendation system. You can ask for restaurants by area, price range or food type. How may I help you?")
+            current_state = 1
+            next_state = 1
+            out = get_system_message(current_state)
+            if caps_on:
+                print("Restarting conversation...".upper())
+                print(out.upper())
+            else:
+                print("Restarting conversation...")
+                print(out)
             preferenceField['area'] = None
             preferenceField['pricerange'] = None
             preferenceField['food'] = None
@@ -573,8 +586,6 @@ def main():
             candidate_restaurants = []
             suggested_restaurants = [[None]]
             current_restaurant = None
-            current_state = 1
-            next_state = 1
             restart = False
 
         if next_state == 12:
@@ -621,7 +632,11 @@ def main():
             if detail == '':
                 detail = 'unknown'
 
-        print_system_message(next_state,restaurant=current_restaurant, detail=detail)
+        out = get_system_message(next_state,restaurant=current_restaurant, detail=detail)
+        if caps_on:
+            print(out.upper())
+        else:
+            print(out)
 
 if __name__ == "__main__":
     main()
