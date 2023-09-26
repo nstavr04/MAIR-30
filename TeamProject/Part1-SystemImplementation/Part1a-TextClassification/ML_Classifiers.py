@@ -51,7 +51,7 @@ def get_decision_tree_classifier(x_train,y_train):
     vectorizer = CountVectorizer()
     x_train_bow = vectorizer.fit_transform(x_train)
 
-    clf = DecisionTreeClassifier(random_state=0, max_iter=1000)
+    clf = DecisionTreeClassifier()
     clf.fit(x_train_bow, y_train)
     return clf
 

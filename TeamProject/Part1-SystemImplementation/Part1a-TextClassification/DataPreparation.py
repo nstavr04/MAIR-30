@@ -4,9 +4,12 @@ import pandas as pd
 
 # We want to read the dalog_acts.dat file. The first word of every line is the class label and the rest of the line is the text.
 # Change accordingly, my computer does not work for relative paths
-def get_data(path = 'dialog_acts'):
+def get_data(path = 'dialog_acts',shuffel = True):
 
     df = pd.read_csv('dialog_acts.dat', names=['data'])
+
+    if shuffel:
+        df = df.sample(frac=1).reset_index(drop=True)
 
     # Apply the function to split the 'data' column into 'label' and 'text' columns
     df[['label', 'text']] = df['data'].apply(lambda x: pd.Series(x.split(' ', 1)))

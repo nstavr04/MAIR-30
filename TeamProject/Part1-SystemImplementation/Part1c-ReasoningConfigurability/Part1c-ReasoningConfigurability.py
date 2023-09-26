@@ -101,7 +101,7 @@ def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
 
             # First thing to do is to check whether there was a misspelling
             preferences_or_misspelling = check_misspelling_or_preferences(cur_utterance, cur_state)
-
+            print(preferences_or_misspelling)
             if type(preferences_or_misspelling) == str:
                 # Print error message here because misspelled word is known
                 print_system_message(2, misspelling=preferences_or_misspelling)
@@ -330,6 +330,7 @@ def keyword_matching(utterance,cur_state):
         token = tokens[0]
         if token not in ignore_words:
             closest_term, pref_type = levenshtein_distance_single(token)
+            print(closest_term, pref_type)
             # They if basically means that closest_term is not None
             if closest_term:
                 if closest_term == 'any':
@@ -380,7 +381,6 @@ def check_misspelling_or_preferences(cur_utterance, cur_state):
 
     keywords = keyword_matching(cur_utterance, cur_state)
 
-    print('Keywords are: ', keywords)
 
     # We check for all the keywords if we have a big mispelling
     # If yes we will raise the misspelling flag
@@ -415,7 +415,7 @@ def levenshtein_distance_single(keyword):
         if min_distance <= levenshtein_dis:
             return random.choice(closest_terms), keyword_type
         
-    return None, None
+    return keyword, 'area'
 
 def levenshtein_distance_regex(keyword, keyword_type):
     min_distance = levenshtein_dis + 1
@@ -430,12 +430,11 @@ def levenshtein_distance_regex(keyword, keyword_type):
     if min_distance <= levenshtein_dis:
         return random.choice(closest_terms)
     else:
-        return None
+        return keyword
 
 def levenshtein_distance(keyword, keyword_type, preferences):
     min_distance = levenshtein_dis + 1
     closest_terms = []
-
     for term in domain_terms_dict[keyword_type]:
         distance = Levenshtein.distance(keyword, term)
         if distance < min_distance:
@@ -448,7 +447,6 @@ def levenshtein_distance(keyword, keyword_type, preferences):
         preferences[keyword_type] = random.choice(closest_terms)
         return preferences, ''
     else:
-        print("Big mispelling, need an according error message")
         return preferences, keyword
 
 def update_preferences(preferences, current_state):
@@ -470,7 +468,6 @@ def update_preferences(preferences, current_state):
 # @detail: string, the requested detail of the restaurant, only needed if @current_state = 10, can be either "phone","addr","postcode"
 def print_system_message(current_state, misspelling='', restaurant=None, detail=None):
     out = ""
-    print(current_state)
     match current_state:
         case 1:
             out =  "Hello, welcome to the Group 30 restaurant recommendation system. You can ask for restaurants by area, price range or food type. How may I help you?"
