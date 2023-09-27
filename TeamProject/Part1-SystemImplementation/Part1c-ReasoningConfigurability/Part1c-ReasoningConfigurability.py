@@ -350,59 +350,6 @@ def check_misspelling_or_preferences(cur_utterance, cur_state):
 
     return preferences
 
-def levenshtein_distance_single(keyword):
-    min_distance = levenshtein_dis + 1
-    closest_terms = []
-    # Since it's a single word we need to check for all keyword types
-    for keyword_type in domain_terms_dict.keys():
-        for term in domain_terms_dict[keyword_type]:
-            distance = Levenshtein.distance(keyword, term)
-            # if keyword_type == 'food':
-            #     print(term, ' ', distance)
-            if distance < min_distance:
-                min_distance = distance
-                closest_terms = [term]
-            elif distance == min_distance:
-                closest_terms.append(term)
-    
-        # print(closest_terms, min_distance)
-        if min_distance <= levenshtein_dis:
-            return random.choice(closest_terms), keyword_type
-        
-    return keyword, 'area'
-
-def levenshtein_distance_regex(keyword, keyword_type):
-    min_distance = levenshtein_dis + 1
-    closest_terms = []
-    for term in domain_terms_dict[keyword_type]:
-        distance = Levenshtein.distance(keyword, term)
-        if distance < min_distance:
-            min_distance = distance
-            closest_terms = [term]
-        elif distance == min_distance:
-            closest_terms.append(term)
-    if min_distance <= levenshtein_dis:
-        return random.choice(closest_terms)
-    else:
-        return keyword
-
-def levenshtein_distance(keyword, keyword_type, preferences):
-    min_distance = levenshtein_dis + 1
-    closest_terms = []
-    for term in domain_terms_dict[keyword_type]:
-        distance = Levenshtein.distance(keyword, term)
-        if distance < min_distance:
-            min_distance = distance
-            closest_terms = [term]
-        elif distance == min_distance:
-            closest_terms.append(term)
-
-    if min_distance <= levenshtein_dis:
-        preferences[keyword_type] = random.choice(closest_terms)
-        return preferences, ''
-    else:
-        return preferences, keyword
-
 def update_preferences(preferences, current_state):
     match current_state:
         case 1| 2| 3| 4| 5:

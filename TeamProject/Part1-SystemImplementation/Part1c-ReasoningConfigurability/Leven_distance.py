@@ -10,16 +10,19 @@ def levenshtein_distance_single(keyword, domain_terms_dict, levenshtein_dis):
     for keyword_type in domain_terms_dict.keys():
         for term in domain_terms_dict[keyword_type]:
             distance = Levenshtein.distance(keyword, term)
+            # if keyword_type == 'food':
+            #     print(term, ' ', distance)
             if distance < min_distance:
                 min_distance = distance
                 closest_terms = [term]
             elif distance == min_distance:
                 closest_terms.append(term)
     
+        # print(closest_terms, min_distance)
         if min_distance <= levenshtein_dis:
             return random.choice(closest_terms), keyword_type
         
-    return None, None
+    return keyword, 'area'
 
 def levenshtein_distance_regex(keyword, keyword_type, domain_terms_dict, levenshtein_dis):
     min_distance = levenshtein_dis + 1
@@ -34,12 +37,11 @@ def levenshtein_distance_regex(keyword, keyword_type, domain_terms_dict, levensh
     if min_distance <= levenshtein_dis:
         return random.choice(closest_terms)
     else:
-        return None
+        return keyword
 
 def levenshtein_distance(keyword, keyword_type, preferences, domain_terms_dict, levenshtein_dis):
     min_distance = levenshtein_dis + 1
     closest_terms = []
-
     for term in domain_terms_dict[keyword_type]:
         distance = Levenshtein.distance(keyword, term)
         if distance < min_distance:
@@ -52,5 +54,4 @@ def levenshtein_distance(keyword, keyword_type, preferences, domain_terms_dict, 
         preferences[keyword_type] = random.choice(closest_terms)
         return preferences, ''
     else:
-        print("Big mispelling, need an according error message")
         return preferences, keyword
