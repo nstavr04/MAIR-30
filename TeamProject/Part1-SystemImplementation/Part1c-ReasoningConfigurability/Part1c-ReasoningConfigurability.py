@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import json
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.tree import DecisionTreeClassifier
@@ -10,44 +11,18 @@ import random
 import string
 import re
 import ASR_userUtterance
+import Leven_distance
 
-# State transition function (Integer with ifs or something)
+# Load our configurations
+with open("configurations.json", "r") as f:
+    configurations = json.load(f)
 
-# Add the classify function from Part1a here
-# Probably train the ml model once at the start of every run
+dialog_restart_on = configurations['dialog_restart_on']
+ASR_on = configurations['ASR_on']
+caps_on = configurations['caps_on']
+levenshtein_dis = configurations['levenshtein_dis']
 
-# Function for the keyword matching algorithm (to extract preferences)
-# A subfunction or something for the levenshtein distance before we check for keywords
-# For levenshtein:
-# If distance < 4 we choose the closest one
-# Equal distance we choose random
-# If distance >= 4 system should re-ask the preference with a suitable error message
-# Input to lowercase before anything
-
-# A function for the utterances templates that the system will reply with (e.g Which {preference} do you prefer?) - will see how to do this
-
-# A function that once 3 preferences are filled the system will provide a resto recommendation to the user
-# Basically filter from the .csv file (can keep all the 3 address,phone,postcode for all the suggestions)
-# For multiple suggestions we just pick random
-# If no suggestion, have a message to inform user.
-
-# Check if the test cases are handled correctly
-
-# 1. Welcome
-# 2. Ask for correction with error message
-# 3. Ask Area
-# 4. Ask Price Range
-# 5. Ask Food Type
-# 6. Express no resto available
-# 7. Ask for correction
-# 8. Confirm user wants to leave
-# 9. Suggest Restaurant
-# 10. Provide asked restaurant details
-# 11. Goodbye
-
-# MAKE SURE TO MAKE THE CHATBOT WORK WITH DONTCARES AS WELL (REPRESENTED BY X IN FIND_RESTAURANTS FUNCTION)
-
-# Fields that need to be filled:
+# Used to store the preferences of the user
 preferenceField = {
     'area': None,
     'pricerange': None,
@@ -61,8 +36,7 @@ optionalPreferences = {
     'romantic':None
 }
 
-
-# Possibly more food types, need to check
+# All the possible values for the preferences
 domain_terms_dict = {
     'pricerange': ['cheap', 'moderate', 'expensive'],
     'area': ['north', 'south', 'east', 'west', 'centre'],
@@ -76,34 +50,20 @@ domain_terms_dict = {
              'vietnamese', 'swedish', 'russian', 'welsh', 'austrian', 'belgian', 'brazilian']
 }
 
-# Configurations for the dialog restaurant recommendation system
-dialog_restart_on = True
-ASR_on = False
-caps_on = True
-levenshtein_dis = 3
-
 # State transistion function to change the state
 # @cur_state: int, the current state
 # @cur_dialog_act: string, the predicted dialog act for the current utterance
 # @cur_utterance: string, the current utterance provided by the user
 def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
     
-    # Check the current state
     match cur_state:
-
         case 1 | 2 | 3 | 4 | 5:
-            
-            # THIS WAS UNCOMMENTED. NEED CHECK THAT IT STILL WORKS CORRECTLY
-            # Moved it so it catches reqalts as well with a preference
-
             if cur_dialog_act != 'inform' and cur_dialog_act != 'reqalts':
                  return checkPreferences()
 
-            # First thing to do is to check whether there was a misspelling
             preferences_or_misspelling = check_misspelling_or_preferences(cur_utterance, cur_state)
             print(preferences_or_misspelling)
             if type(preferences_or_misspelling) == str:
-                # Print error message here because misspelled word is known
                 print_system_message(2, misspelling=preferences_or_misspelling)
                 return 2
 
@@ -114,14 +74,12 @@ def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
             if cur_dialog_act == 'bye' or cur_dialog_act == 'thankyou':
                 return 8
             if cur_dialog_act != 'inform':
-                # checkPreferences() will always return 6 so we just return 6
                 return 6  
             
             # First thing to do is to check whether there was a misspelling
             preferences_or_misspelling = check_misspelling_or_preferences(cur_utterance, cur_state)
             
             if type(preferences_or_misspelling) == str:
-                # Print error message here because misspelled word is known
                 print_system_message(7, misspelling=preferences_or_misspelling)
                 return 7
 
@@ -129,7 +87,6 @@ def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
             return checkPreferences()
         
         case 8:
-            # Check if user really wants to leave
             if cur_dialog_act in ['bye', 'thankyou', 'ack', 'confirm','affirm']:
                 return 12
             return 6
@@ -143,7 +100,6 @@ def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
             return 9
         
         case 10:
-            # Check if user wants a restaurant suggestion
             if cur_dialog_act == 'request':
                 return 11
             if cur_dialog_act in ['bye', 'thankyou']:
@@ -151,7 +107,6 @@ def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
             return 10
         
         case 11:
-            # Check if user doesn't want any other restaurant detail
             if cur_dialog_act in ['bye', 'thankyou']:
                 return 12
             return 11
@@ -159,7 +114,7 @@ def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
         case 12:
             return -1
 
-# function to update the additional preferences
+# Function to update the additional preferences
 # @cur_utterance: string, the current utterance provided by the user
 def update_opt_requirements(cur_utterance):
     optionalPreferences['touristic'] = True if 'touristic' in cur_utterance else False
@@ -170,23 +125,18 @@ def update_opt_requirements(cur_utterance):
 # Function to perform checks on the presence of the preferences
 # For the transition function (see model diagram -> long column of diamonds)
 def checkPreferences():
-    # If there is no restraunt matching the preferred attributes transite to state 6
     if len(find_restaurants(preferenceField['area'], preferenceField['pricerange'], preferenceField['food'])) == 0:
         return 6
     
-    # If the preferred area is unknown move to transite 3
     if preferenceField['area'] == None:
         return 3
     
-    # If the preferred pricerange is unknown move to transite 4
     if preferenceField['pricerange'] == None:
         return 4
     
-    # If preferred Foodtype is unkown transite to state 5
     if preferenceField['food'] == None:
         return 5
     
-    # Transite to state 9 to suggest a restaurant
     return 9
 
 # Lookup function to find restaurants fitting the criteria in the .csv file
@@ -205,7 +155,7 @@ def find_restaurants(area='X', price='X', food='X', path='restaurant_info_extend
     return restaurants.values
 
 # Lookup function to filter restaurants fitting the additional requirements
-# restaurants is a numpy array, requirements should be provided as boolean
+# Restaurants is a numpy array, requirements should be provided as boolean
 # @return is a numpy array
 def filter_restaurants_opt_requirements(restaurants, touristic=False, assigned_seats=False, children=False, romantic=False):
 
@@ -236,6 +186,7 @@ def choose_restaurant(restaurants, already_used_restaurants):
 
     return restaurants[random.randint(0, len(restaurants)-1)]
 
+# Function to train the machine learning model
 def train_ml_model():
     df = pd.read_csv('dialog_acts.dat', names=['data'])
     df[['label', 'text']] = df['data'].apply(lambda x: pd.Series(x.split(' ', 1)))
@@ -256,6 +207,7 @@ def train_ml_model():
 
     return vectorizer, clf
 
+# Handles the input from the user and classifies it into a dialog_act
 def prompt_input(vectorizer, clf):
 
     utterance = None
@@ -280,10 +232,11 @@ def prompt_input(vectorizer, clf):
 
     return predicted_label, utterance
 
+# We find the keywords from the utterance that are relevant for the preferences
 def keyword_matching(utterance,cur_state):
+
+    # Words that will be identified as 'dontcare'
     dont_cares = ['any',"don't care","i don't care","i do not care","i don't mind","i do not mind", "anything"]
-
-
 
     keywords = {
         'area': None,
@@ -291,6 +244,7 @@ def keyword_matching(utterance,cur_state):
         'food': None
     }
 
+    # We mark our dontcares with an X
     if utterance in dont_cares:
         if cur_state == 3:
             keywords['area'] = 'X'
@@ -303,7 +257,7 @@ def keyword_matching(utterance,cur_state):
             return keywords
 
     regex_patterns = {
-    'food': re.compile(r'\b(\w+)\s+(food|restaurant|place|restaurantin)\b'),
+    'food': re.compile(r'\b(\w+)\s+(food|restaurant|place|restaurantin|type)\b'),
     'pricerange': re.compile(r'\b(\w+)\s+(priced|price)\b'),
     'area': re.compile(r'\b(\w+)\s+(part|area)|in\s+the\s+(\w+)\b'),
     }
@@ -318,19 +272,16 @@ def keyword_matching(utterance,cur_state):
         for pref_type, pref in domain_terms_dict.items():
             for pref_term in pref:
                 if token==pref_term:
-                    if token == 'any':
-                        token = 'X'
                     keywords[pref_type] = token
 
     # List of words to ignore that have a <=3 levenshtein distance to a preference
-    ignore_words = {'a', 'the', 'in', 'cheap', 'hi', 'hey', 'play'}
+    ignore_words = {'a', 'the', 'in', 'cheap', 'hi', 'hey', 'play', 'thanks'}
 
     # User only provided one word
     if len(tokens) == 1:
         token = tokens[0]
         if token not in ignore_words:
-            closest_term, pref_type = levenshtein_distance_single(token)
-            print(closest_term, pref_type)
+            closest_term, pref_type = Leven_distance.levenshtein_distance_single(token, domain_terms_dict, levenshtein_dis)
             # They if basically means that closest_term is not None
             if closest_term:
                 if closest_term == 'any':
@@ -352,32 +303,35 @@ def keyword_matching(utterance,cur_state):
                     if len(match.groups()) == 3:
                         third_group = match.group(3)
                     if first_group == "any":
-                        if second_group == "food" or second_group == "restaurant" or second_group == "place" or second_group == "restaurantin":
+                        if second_group in {"food", "restaurant", "place", "restaurantin", "type"}:
                             keywords['food'] = "X"
-                        elif second_group == "priced" or second_group == "price":
+                        elif second_group in {"priced", "price"}:
                             keywords['pricerange'] = "X"
-                        elif second_group == "part" or second_group == "area":
+                        elif second_group in {"part", "area"}:
                             keywords['area'] = "X"
+
                     elif third_group:
-                        closest_term = levenshtein_distance_regex(third_group, pref_type)
+                        closest_term = Leven_distance.levenshtein_distance_regex(third_group, pref_type, domain_terms_dict, levenshtein_dis)
                         # If we found a close term we save it as a keyword
                         if closest_term:
                             keywords[pref_type] = closest_term
                     elif first_group and first_group not in ignore_words:
-                        closest_term = levenshtein_distance_regex(first_group, pref_type)
+                        closest_term = Leven_distance.levenshtein_distance_regex(first_group, pref_type, domain_terms_dict, levenshtein_dis)
                         # If we found a close term we save it as a keyword
                         if closest_term:
                             keywords[pref_type] = closest_term
 
     return keywords
 
+# The function returns either a dictionary with the preferences or a string with the misspelled word
 def check_misspelling_or_preferences(cur_utterance, cur_state):
-    # We need some logic with the keyword_matching (maybe not all utterances need to run this function)
+    
+    # Used as a temporary storage for the preferences before assigning them to the preferenceField
     preferences = {
         'area': None,
         'pricerange': None,
         'food': None
-    }  # save preferences in the dictonary
+    }
 
     keywords = keyword_matching(cur_utterance, cur_state)
 
@@ -387,7 +341,7 @@ def check_misspelling_or_preferences(cur_utterance, cur_state):
     for keyword_type, keyword in keywords.items():
 
         if keyword is not None and keyword != 'X':
-            preferences, misspelling = levenshtein_distance(keyword, keyword_type, preferences)
+            preferences, misspelling = Leven_distance.levenshtein_distance(keyword, keyword_type, preferences, domain_terms_dict, levenshtein_dis)
             if len(misspelling) > 0:
                 return misspelling
         
@@ -470,8 +424,10 @@ def print_system_message(current_state, misspelling='', restaurant=None, detail=
     out = ""
     match current_state:
         case 1:
-            out =  "Hello, welcome to the Group 30 restaurant recommendation system. You can ask for restaurants by area, price range or food type. How may I help you?"
-
+            if dialog_restart_on:
+                out =  "Hello, welcome to the Group 30 restaurant recommendation system. You can ask for restaurants by area, price range or food type. How may I help you? \nYou can restart the conversation at any point by typing 'restart conversation'"
+            else:
+                out =  "Hello, welcome to the Group 30 restaurant recommendation system. You can ask for restaurants by area, price range or food type. How may I help you?"
         case 2:
             out = f"Could not recognize word '{misspelling}', please rephrase your input!"
 
@@ -542,68 +498,78 @@ def print_system_message(current_state, misspelling='', restaurant=None, detail=
     else:
         print(out)
 
-def main():
-    #print("Hello, welcome to the Group 30 restaurant recommendation system. You can ask for restaurants by area, price range or food type. How may I help you?")
+def reset_conversation():
+    preferenceField['area'] = None
+    preferenceField['pricerange'] = None
+    preferenceField['food'] = None
+    optionalPreferences['romantic'] = None
+    optionalPreferences['children'] = None
+    optionalPreferences['touristic'] = None
+    optionalPreferences['assigned_seats'] = None
 
-    restart = False
-
-    # possible_states = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
-    current_state = 1
-    next_state = 1
-
-    vectorizer, clf = train_ml_model()
-
-    print_system_message(current_state)
+def identify_details(current_state, utterance):
+    detail = ''
+    if current_state == 11:
+        # Check what detail is requested
+        if 'phone' in utterance or 'number' in utterance:
+            detail = 'phone'
+        if 'address' in utterance or 'where' in utterance:
+            detail += 'addr'
+        if 'post' in utterance or 'code' in utterance:
+            detail += 'postcode'
+        if detail == '':
+            detail = 'unknown'    
     
-    # Restaurants that fit the preferences
+    return detail
+
+def main():
+
+    restart_flag = False
+
     candidate_restaurants = []
-    # Restaurants that were suggested so far
     suggested_restaurants = [[None]]
     current_restaurant = None
+    current_state = 1
+
+    vectorizer, clf = train_ml_model()
+    print_system_message(current_state)
 
     while True:
 
-        if dialog_restart_on and restart:
-            current_state = 1
-            next_state = 1
-
+        # Restart conversation block
+        if dialog_restart_on and restart_flag:
             if caps_on:
                 print("Restarting conversation...".upper())
             else:
                 print("Restarting conversation...")
-            print_system_message()
-            preferenceField['area'] = None
-            preferenceField['pricerange'] = None
-            preferenceField['food'] = None
-            optionalPreferences['romantic'] = None
-            optionalPreferences['children'] = None
-            optionalPreferences['touristic'] = None
-            optionalPreferences['assigned_seats'] = None
+            print_system_message(current_state)
+            # Reset global variables
+            reset_conversation()
             candidate_restaurants = []
             suggested_restaurants = [[None]]
             current_restaurant = None
-            restart = False
+            current_state = 1   
+            restart_flag = False
 
-        if next_state == 12:
+        if current_state == 12:
             break
     
-        current_state = next_state
         print("Current state: ", current_state)
 
         predicted_label, utterance = prompt_input(vectorizer, clf)
 
-        if dialog_restart_on and "restart" in utterance: 
-            restart = True
+        if dialog_restart_on and "restart conversation" in utterance: 
+            restart_flag = True
             continue
 
-        next_state = state_transition_function(current_state, predicted_label, utterance)
+        current_state = state_transition_function(current_state, predicted_label, utterance)
         
         print(predicted_label, " | ", utterance, '(', preferenceField['area'], ' ',preferenceField['pricerange'], ' ',preferenceField['food'], ')')
 
-        if next_state == 2 or next_state == 7: #this case is handled inside of state_transition_function
+        if current_state == 2 or current_state == 7: #this case is handled inside of state_transition_function
             continue
         # If we want to suggest a restaurant, we have to find one
-        if next_state == 10:
+        if current_state == 10:
             # If candidate restaurants not computed yet, find them now
             if len(candidate_restaurants) == 0:
                 candidate_restaurants = find_restaurants(preferenceField['area'], preferenceField['pricerange'], preferenceField['food'])
@@ -616,20 +582,8 @@ def main():
                 else:
                     suggested_restaurants.append(current_restaurant)
 
-        detail = ''
-        if next_state == 11:
-            # Check what detail is requested
-            if 'phone' in utterance or 'number' in utterance:
-                detail = 'phone'
-            if 'address' in utterance or 'where' in utterance:
-                detail += 'addr'
-            if 'post' in utterance or 'code' in utterance:
-                detail += 'postcode'
-            if detail == '':
-                detail = 'unknown'
-
-        print_system_message(next_state, restaurant=current_restaurant, detail=detail)
-
+        detail = identify_details(current_state, utterance)
+        print_system_message(current_state, restaurant=current_restaurant, detail=detail)
 
 if __name__ == "__main__":
     main()
