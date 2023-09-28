@@ -20,6 +20,7 @@ with open("configurations.json", "r") as f:
 
 dialog_restart_on = configurations['dialog_restart_on']
 caps_on = configurations['caps_on']
+random_preference_order_on = configurations['random_preference_order_on']
 
 
 # Used to store the preferences of the user
@@ -152,15 +153,17 @@ def train_ml_model():
 
 
 def update_preferences(preferences, current_state):
-    match current_state:
-        case 1| 2| 3| 4| 5:
-            for key in preferences.keys():
-                if preferenceField[key] is None:
-                    preferenceField[key] = preferences[key]
-        case 6| 7:
-            for key in preferences.keys():
-                if preferences[key] is not None:
-                    preferenceField[key] = preferences[key]
+    for key in ['area','pricerange','food']:
+        if preferences[key] is not None:
+            if preferenceField[key] is None:
+                preferenceField[key] = preferences[key]
+                if not random_preference_order_on:
+                    return
+            elif current_state in [6,7]:
+                preferenceField[key] = preferences[key]
+        elif preferenceField[key] is None and not random_preference_order_on:
+            return
+
 
 
 
@@ -209,7 +212,7 @@ def main():
         if current_state == 12:
             break
     
-        print("Current state: ", current_state)
+        #print("Current state: ", current_state)
 
         predicted_label, utterance = prompt_input(vectorizer, clf)
 
