@@ -58,11 +58,10 @@ def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
     
     match cur_state:
         case 1 | 2 | 3 | 4 | 5:
-            if cur_dialog_act != 'inform' and cur_dialog_act != 'reqalts':
+            if cur_dialog_act != 'inform' and cur_dialog_act != 'reqalts' and cur_dialog_act != 'request':
                  return checkPreferences()
 
             preferences_or_misspelling = check_misspelling_or_preferences(cur_utterance, cur_state)
-            print(preferences_or_misspelling)
             if type(preferences_or_misspelling) == str:
                 print_system_message(2, misspelling=preferences_or_misspelling)
                 return 2
@@ -489,7 +488,7 @@ def main():
                 print("Restarting conversation...".upper())
             else:
                 print("Restarting conversation...")
-            print_system_message(current_state)
+
             # Reset global variables
             reset_conversation()
             candidate_restaurants = []
@@ -497,6 +496,8 @@ def main():
             current_restaurant = None
             current_state = 1   
             restart_flag = False
+            #print message after current_state is reset
+            print_system_message(current_state)
 
         if current_state == 12:
             break
