@@ -1,3 +1,5 @@
+#This document contains an additional function to prepare the data user for training the models
+
 import pandas as pd
 
 # Dataset has 15 classes (dialog acts)

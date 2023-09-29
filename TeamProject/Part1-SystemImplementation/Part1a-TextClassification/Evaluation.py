@@ -1,3 +1,5 @@
+#This document contains additional functions to evaluate the trained models
+
 from BaselineClassifiers import baseline_predict
 from BaselineClassifiers import baseline_majority_predict
 from ML_Classifiers import get_decision_tree_classifier

@@ -1,7 +1,9 @@
+#This document contains additional functions to analyze an utterance for preferences, misspellings, or other information.
+
+
 import re
 import string
 import Leven_distance
-import Levenshtein
 import json
 
 # All the possible values for the preferences

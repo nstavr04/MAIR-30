@@ -1,3 +1,5 @@
+#This function contains functions to handle Speech-Input and the outputs of the system in the CLI
+
 import ASR_userUtterance
 import json
 import time

@@ -1,3 +1,5 @@
+#This document contains functions to compute the Levenshtein distance to possibly misspelled words.
+
 import random
 import Levenshtein
 
