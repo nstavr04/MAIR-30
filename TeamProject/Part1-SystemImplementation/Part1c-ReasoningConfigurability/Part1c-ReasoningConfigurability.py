@@ -161,6 +161,13 @@ def update_preferences(preferences, current_state):
                 if not random_preference_order_on:
                     return
             elif current_state in [6,7]:
+                if random_preference_order_on:
+                    preferenceField = {
+                        'area': None,
+                        'pricerange': None,
+                        'food': None
+                    }
+                    update_preferences(preferences, 1)
                 preferenceField[key] = preferences[key]
         elif preferenceField[key] is None and not random_preference_order_on:
             return
