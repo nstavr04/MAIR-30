@@ -11,6 +11,7 @@ from Read_Restaurant_Data import choose_restaurant
 
 from Input_Output_Functions import print_system_message
 from Input_Output_Functions import prompt_input
+from Input_Output_Functions import set_configurations
 from Analyze_Utterance import check_misspelling_or_preferences
 from Analyze_Utterance import identify_details
 
@@ -180,6 +181,11 @@ def reset_conversation():
 
 def main():
 
+    restart_after_conf = set_configurations()
+    if restart_after_conf:
+
+        return
+
     restart_flag = False
 
     candidate_restaurants = []
@@ -222,7 +228,7 @@ def main():
 
         current_state = state_transition_function(current_state, predicted_label, utterance)
         
-        print(predicted_label, " | ", utterance, '(', preferenceField['area'], ' ',preferenceField['pricerange'], ' ',preferenceField['food'], ')')
+        #print(predicted_label, " | ", utterance, '(', preferenceField['area'], ' ',preferenceField['pricerange'], ' ',preferenceField['food'], ')')
 
         if current_state == 2 or current_state == 7: #this case is handled inside of state_transition_function
             continue

@@ -14,6 +14,7 @@ caps_on = configurations['caps_on']
 delay_on = configurations['delay_on']
 
 
+
 # Function to handle system outputs
 # @paramters
 # @current_state: int, the current state of the system
@@ -26,10 +27,8 @@ def print_system_message(current_state,preferenceField,optionalPreferences, miss
     out = ""
     match current_state:
         case 1:
-            if dialog_restart_on:
-                out =  "Hello, welcome to the Group 30 restaurant recommendation system. You can ask for restaurants by area, price range or food type. How may I help you? \nYou can restart the conversation at any point by typing 'restart conversation'"
-            else:
-                out =  "Hello, welcome to the Group 30 restaurant recommendation system. You can ask for restaurants by area, price range or food type. How may I help you?"
+            restart =  "\nYou can restart the conversation at any point by typing 'restart conversation'" if dialog_restart_on else ""
+            out =  f"Hello, welcome to the Group 30 restaurant recommendation system. You can ask for restaurants by area, price range or food type. How may I help you?{restart}"
         case 2:
             out = f"Could not recognize word '{misspelling}', please rephrase your input!"
 
@@ -37,7 +36,7 @@ def print_system_message(current_state,preferenceField,optionalPreferences, miss
             out = "What part of town do you have in mind?"
 
         case 4:
-            out = "Would you like something in the cheap , moderate , or expensive price range?"
+            out = "Would you like something in the cheap, moderate, or expensive price range?"
 
         case 5:
             out = "What kind of food would you like?"
@@ -59,7 +58,7 @@ def print_system_message(current_state,preferenceField,optionalPreferences, miss
                 out = 'Do you have additional requirements (should the restaurant be touristic, suitable for ' \
                        'children, romantic or have assigned seats) '
             else:
-                out = 'Sorry, there is no restaurant fullfilling your additional preferences. Please choose other ' \
+                out = 'Sorry, there is no restaurant fulfilling your additional preferences. Please choose other ' \
                       'additional requirements'
 
         case 10:
@@ -67,16 +66,21 @@ def print_system_message(current_state,preferenceField,optionalPreferences, miss
             area = f" in the {restaurant[2]} part of the town" if restaurant[2] != '' else ""
             pricerange = restaurant[1] if restaurant[1] != '' else ""
             food = f" serving {restaurant[3]} food" if restaurant[3] != '' else ""
-            out = f"{name} is a nice {pricerange} restaurant{area}{food}"
+            out = f"{name} is a nice {pricerange} restaurant{area}{food}."
             #print(optionalPreferences)
+            touristic = ""
+            assigned_seats = ""
+            children = ""
+            romantic = ""
             if optionalPreferences['touristic'] == True:
-                out += f"\n {name} is touristic because it has good and popular food."
+                touristic = f"\n{name} is touristic because it has good and popular food."
             if optionalPreferences['assigned_seats'] == True:
-                out += f"\n {name} is a busy restaurant, therefore the waiter will decide where you sit."
+                assigned_seats += f"\n{name} is a busy restaurant, therefore the waiter will decide where you sit."
             if optionalPreferences['children'] == True:
-                out += f"\nAt {name} people do not tend to stay there for a long time. Therefore your children will not get bored waiting for the food."
+                children += f"\nAt {name} people do not tend to stay there for a long time. Therefore your children will not get bored waiting for the food."
             if optionalPreferences['romantic'] == True:
-                out += f"\nYou can have a lovely date for a longer time at {name}"
+                romantic += f"\nYou can have a lovely date for a longer time at {name}."
+            out = f"{name} is a nice {pricerange} restaurant{area}{food}.{touristic}{assigned_seats}{children}{romantic}"
         case 11:
             phone = ''
             addr = ''
@@ -87,9 +91,9 @@ def print_system_message(current_state,preferenceField,optionalPreferences, miss
                 addr = f', the address is {restaurant[5]}'
             if 'postcode' in detail:
                 postcode = f', the post code is {restaurant[6]}'
-            out = f'Sure{phone}{addr}{postcode}'
+            out = f'Sure{phone}{addr}{postcode}.'
             if detail == 'unknown':
-                out = f"Please specify whether you want the phone number, the address, or the postcode"
+                out = f"Please specify whether you want the phone number, the address, or the postcode."
 
 
         case 12:
@@ -124,3 +128,118 @@ def prompt_input(vectorizer, clf):
     predicted_label = clf.predict(utterance_bow)[0]
 
     return predicted_label, utterance
+
+#Function to set the configuration from the CLI
+def set_configurations():
+    with open("configurations.json", "r") as f:
+        configurations = json.load(f)
+
+    dialog_restart_on = configurations['dialog_restart_on']
+    ASR_on = configurations['ASR_on']
+    caps_on = configurations['caps_on']
+    levenshtein_dis = configurations['levenshtein_dis']
+    delay_on = configurations['delay_on']
+    random_preference_order_on = configurations["random_preference_order_on"]
+
+    print('Before starting the dialog system you have the option to change the current configuration settings')
+    print('The following options are implemented and can be activated or used:')
+    print(f'Restart the dialog system at any time, currently active: {dialog_restart_on}')
+    print(f'Speech recognition, currently active: {ASR_on}')
+    print(f'System outputs in Caps, currently active: {caps_on}')
+    print(f'Set levenshtein_dis for automatic misspelling correction, current distance: {levenshtein_dis}')
+    print(f'System outputs with delay, currently active: {delay_on}')
+    print(f'Preferences can be stated in random order, currently active: {random_preference_order_on}')
+    time.sleep(1)
+    print()
+    print("==========IMPORTANT==========")
+    print("If you want to change the current configurations, type 'change', if you want to keep the current options, type 'continue'")
+    print("WARNING: if you change the current configurations, the application will be closed and has to be restarted!")
+    print()
+    utterance = None
+    while utterance is None:
+        utterance = input("Please enter your choice: ").lower()
+        if utterance == 'continue':
+            print("\n Dialog System is starting... \n")
+            return False
+        elif utterance == 'change':
+            utterance = None
+            while utterance is None:
+                utterance = input("Type 'yes' to activate restart option and 'no' to deactivate: ").lower()
+                if utterance == 'exit':
+                    return False
+                elif utterance == 'yes':
+                    configurations['dialog_restart_on'] = True
+                elif utterance == 'no':
+                    configurations['dialog_restart_on'] = False
+                else:
+                    utterance = None
+            utterance = None
+            while utterance is None:
+                    utterance = input("Type 'yes' to activate speech recogonition and 'no' to deactivate: ").lower()
+                    if utterance == 'exit':
+                        return False
+                    elif utterance == 'yes':
+                        configurations['ASR_on'] = True
+                    elif utterance == 'no':
+                        configurations['ASR_on'] = False
+                    else:
+                        utterance = None
+            utterance = None
+            while utterance is None:
+                    utterance = input("Type 'yes' to put dialog systems utterances in caps, otherwise type 'no': ").lower()
+                    if utterance == 'exit':
+                        return False
+                    elif utterance == 'yes':
+                        configurations['caps_on'] = True
+                    elif utterance == 'no':
+                        configurations['caps_on'] = False
+                    else:
+                        utterance = None
+            utterance = None
+            while utterance is None:
+                    utterance = input("Please provide an integer to set the levenshtein distance: ").lower()
+                    try:
+                        dist =  int(utterance)
+                        configurations['levenshtein_dis'] = dist
+                    except:
+                        if utterance == 'exit':
+                            return False
+                        else:
+                            utterance = None
+            utterance = None
+
+
+            while utterance is None:
+                    utterance = input("Type 'yes' to activate a delay before dialog system outputs and 'no' to deactivate: ").lower()
+                    if utterance == 'exit':
+                        return False
+                    elif utterance == 'yes':
+                        configurations['delay_on'] = True
+                    elif utterance == 'no':
+                        configurations['delay_on'] = False
+                    else:
+                        utterance = None
+            utterance = None
+            while utterance is None:
+                    utterance = input("Type 'yes' to allow stating preferences in random order and 'no' to not allow: ").lower()
+                    if utterance == 'exit':
+                        return False
+                    elif utterance == 'yes':
+                        configurations['random_preference_order_on'] = True
+                    elif utterance == 'no':
+                        configurations['random_preference_order_on'] = False
+                    else:
+                        utterance = None
+
+            with open('configurations.json', 'w') as f:
+                    json.dump(configurations, f)
+
+            print('Changes were successfully saved!')
+            print('The application will now terminate, please restart the application for the changed preferences.')
+            return True
+        else:
+            utterance = None
+
+
+
+
