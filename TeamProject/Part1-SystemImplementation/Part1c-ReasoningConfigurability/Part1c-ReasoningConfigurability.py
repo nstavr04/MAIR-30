@@ -44,61 +44,61 @@ random_preference_order_on = configurations['random_preference_order_on']
 def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
     
     match cur_state:
-        case 1 | 2 | 3 | 4 | 5:
+        case '1_Welcome' | '2_AskCorrection' | '3_AskArea' | '4_AskPriceRange' | '5_AskFoodType':
             if cur_dialog_act != 'inform' and cur_dialog_act != 'reqalts' and cur_dialog_act != 'request':
                  return checkPreferences()
 
             preferences_or_misspelling = check_misspelling_or_preferences(cur_utterance, cur_state)
             if type(preferences_or_misspelling) == str:
-                print_system_message(2,preferenceField=preferenceField,optionalPreferences=optionalPreferences, misspelling=preferences_or_misspelling)
-                return 2
+                print_system_message('2_AskCorrection',preferenceField=preferenceField,optionalPreferences=optionalPreferences, misspelling=preferences_or_misspelling)
+                return '2_AskCorrection'
 
             update_preferences(preferences_or_misspelling, current_state=cur_state)
             return checkPreferences()
         
-        case 6 | 7:
+        case '6_NoRestaurantExists' | '7_AskCorrection':
             if cur_dialog_act == 'bye' or cur_dialog_act == 'thankyou':
-                return 8
+                return '8_ConfirmExit'
             if cur_dialog_act != 'inform':
-                return 6  
+                return '6_NoRestaurantExists'  
             
             # First thing to do is to check whether there was a misspelling
             preferences_or_misspelling = check_misspelling_or_preferences(cur_utterance, cur_state)
             
             if type(preferences_or_misspelling) == str:
-                print_system_message(7,caps_on=caps_on,preferenceField=preferenceField,optionalPreferences=optionalPreferences, misspelling=preferences_or_misspelling)
-                return 7
+                print_system_message('7_AskCorrection',caps_on=caps_on,preferenceField=preferenceField,optionalPreferences=optionalPreferences, misspelling=preferences_or_misspelling)
+                return '7_AskCorrection'
 
             update_preferences(preferences_or_misspelling, current_state=cur_state)
             return checkPreferences()
         
-        case 8:
+        case '8_ConfirmExit':
             if cur_dialog_act in ['bye', 'thankyou', 'ack', 'confirm','affirm']:
-                return 12
-            return 6
+                return '12_Goodbye'
+            return '6_NoRestaurantExists'
 
-        case 9:
+        case '9_AskAdditionalRequirements':
             update_opt_requirements(cur_utterance)
             restaurants = find_restaurants(preferenceField)
             restaurants = filter_restaurants_opt_requirements(restaurants, optionalPreferences)
             if len(restaurants) > 0:
-                return 10
-            return 9
+                return '10_SuggestRestaurants'
+            return '9_AskAdditionalRequirements'
         
-        case 10:
+        case '10_SuggestRestaurants':
             if cur_dialog_act == 'request':
-                return 11
+                return '11_ProvideRestaurantDetails'
             if cur_dialog_act in ['bye', 'thankyou']:
-                return 12
-            return 10
+                return '12_Goodbye'
+            return '10_SuggestRestaurants'
         
-        case 11:
+        case '11_ProvideRestaurantDetails':
             if cur_dialog_act in ['bye', 'thankyou']:
-                return 12
-            return 11
+                return '12_Goodbye'
+            return '11_ProvideRestaurantDetails'
         
-        case 12:
-            return -1
+        case '12_Goodbye':
+            return '-1'
 
 # Function to update the additional preferences
 # @cur_utterance: string, the current utterance provided by the user
@@ -112,18 +112,18 @@ def update_opt_requirements(cur_utterance):
 # For the transition function (see model diagram -> long column of diamonds)
 def checkPreferences():
     if len(find_restaurants(preferenceField)) == 0:
-        return 6
+        return '6_NoRestaurantExists'
     
     if preferenceField['area'] == None:
-        return 3
+        return '3_AskArea'
     
     if preferenceField['pricerange'] == None:
-        return 4
+        return '4_AskPriceRange'
     
     if preferenceField['food'] == None:
-        return 5
+        return '5_AskFoodType'
     
-    return 9
+    return '9_AskAdditionalRequirements'
 
 # Function to train the machine learning model
 def train_ml_model():
@@ -155,14 +155,14 @@ def update_preferences(preferences, current_state):
                 preferenceField[key] = preferences[key]
                 if not random_preference_order_on:
                     return
-            elif current_state in [6,7]:
+            elif current_state in ['6_NoRestaurantExists','7_AskCorrection']:
                 if random_preference_order_on:
                     preferenceField = {
                         'area': None,
                         'pricerange': None,
                         'food': None
                     }
-                    update_preferences(preferences, 1)
+                    update_preferences(preferences, '1_Welcome')
                 preferenceField[key] = preferences[key]
         elif preferenceField[key] is None and not random_preference_order_on:
             return
@@ -188,7 +188,7 @@ def main():
     candidate_restaurants = []
     suggested_restaurants = [[None]]
     current_restaurant = None
-    current_state = 1
+    current_state = '1_Welcome'
 
     vectorizer, clf = train_ml_model()
     print_system_message(current_state,preferenceField=preferenceField,optionalPreferences=optionalPreferences)
@@ -207,12 +207,12 @@ def main():
             candidate_restaurants = []
             suggested_restaurants = [[None]]
             current_restaurant = None
-            current_state = 1   
+            current_state = '1_Welcome'   
             restart_flag = False
             # Print message after current_state is reset
             print_system_message(current_state,preferenceField=preferenceField,optionalPreferences=optionalPreferences)
 
-        if current_state == 12:
+        if current_state == '12_Goodbye':
             break
 
         predicted_label, utterance = prompt_input(vectorizer, clf)
@@ -226,10 +226,10 @@ def main():
         # Used for debugging purposes
         print(predicted_label, " | ", utterance, '(', preferenceField['area'], ' ',preferenceField['pricerange'], ' ',preferenceField['food'], ')')
 
-        if current_state == 2 or current_state == 7: # This case is handled inside of state_transition_function
+        if current_state == '2_AskCorrection' or current_state == '7_AskCorrection': # This case is handled inside of state_transition_function
             continue
         # If we want to suggest a restaurant, we have to find one
-        if current_state == 10:
+        if current_state == '10_SuggestRestaurants':
             # If candidate restaurants not computed yet, find them now
             if len(candidate_restaurants) == 0:
                 candidate_restaurants = find_restaurants(preferenceField)

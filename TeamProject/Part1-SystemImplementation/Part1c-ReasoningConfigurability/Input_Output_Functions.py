@@ -24,34 +24,34 @@ def print_system_message(current_state,preferenceField,optionalPreferences, miss
         time.sleep(1)
     out = ""
     match current_state:
-        case 1:
+        case '1_Welcome':
             restart =  "\nYou can restart the conversation at any point by typing 'restart conversation'" if dialog_restart_on else ""
             out =  f"Hello, welcome to the Group 30 restaurant recommendation system. You can ask for restaurants by area, price range or food type. How may I help you?{restart}"
-        case 2:
+        case '2_AskCorrection':
             out = f"Could not recognize word '{misspelling}', please rephrase your input!"
 
-        case 3:
+        case '3_AskArea':
             out = "What part of town do you have in mind?"
 
-        case 4:
+        case '4_AskPriceRange':
             out = "Would you like something in the cheap, moderate, or expensive price range?"
 
-        case 5:
+        case '5_AskFoodType':
             out = "What kind of food would you like?"
 
-        case 6:
+        case '6_NoRestaurantExists':
             area = f" in the {preferenceField['area']} part of the town" if preferenceField['area'] is not None else ""
             pricerange = preferenceField['pricerange'] if preferenceField['pricerange'] is not None else ""
             food = f" serving {preferenceField['food']} food" if preferenceField['food'] is not None else ""
             out = f"Sorry, but there is no {pricerange} restaurant{area}{food}."
 
-        case 7:
+        case '7_AskCorrection':
             out = f"Could not recognize word '{misspelling}', please rephrase your input!"
 
-        case 8:
+        case '8_ConfirmExit':
             out = "Please confirm that you want to leave"
 
-        case 9:
+        case '9_AskAdditionalRequirements':
             if optionalPreferences['touristic'] is None:
                 out = 'Do you have additional requirements (should the restaurant be touristic, suitable for ' \
                        'children, romantic or have assigned seats) '
@@ -59,7 +59,7 @@ def print_system_message(current_state,preferenceField,optionalPreferences, miss
                 out = 'Sorry, there is no restaurant fulfilling your additional preferences. Please choose other ' \
                       'additional requirements'
 
-        case 10:
+        case '10_SuggestRestaurants':
             name = restaurant[0]
             area = f" in the {restaurant[2]} part of the town" if restaurant[2] != '' else ""
             pricerange = restaurant[1] if restaurant[1] != '' else ""
@@ -78,7 +78,7 @@ def print_system_message(current_state,preferenceField,optionalPreferences, miss
             if optionalPreferences['romantic'] == True:
                 romantic += f"\nYou can have a lovely date for a longer time at {name}."
             out = f"{name} is a nice {pricerange} restaurant{area}{food}.{touristic}{assigned_seats}{children}{romantic}"
-        case 11:
+        case '11_ProvideRestaurantDetails':
             phone = ''
             addr = ''
             postcode = ''
@@ -92,7 +92,7 @@ def print_system_message(current_state,preferenceField,optionalPreferences, miss
             if detail == 'unknown':
                 out = f"Please specify whether you want the phone number, the address, or the postcode."
 
-        case 12:
+        case '12_Goodbye':
             out = 'Goodbye. Have a nice day!'
 
     if caps_on:

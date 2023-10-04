@@ -38,13 +38,13 @@ def keyword_matching(utterance, cur_state):
 
     # We mark our dontcares with an X
     if utterance in dont_cares:
-        if cur_state == 3:
+        if cur_state == '3_AskArea':
             keywords['area'] = 'X'
             return keywords
-        if cur_state == 4:
+        if cur_state == '4_AskPriceRange':
             keywords['pricerange'] = 'X'
             return keywords
-        if cur_state == 5:
+        if cur_state == '5_AskFoodType':
             keywords['food'] = 'X'
             return keywords
 
