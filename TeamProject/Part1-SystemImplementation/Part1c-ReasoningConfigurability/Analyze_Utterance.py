@@ -36,16 +36,16 @@ def keyword_matching(utterance, cur_state):
         'food': None
     }
 
-    # We mark our dontcares with an X
+    # We mark our dontcares
     if utterance in dont_cares:
         if cur_state == '3_AskArea':
-            keywords['area'] = 'X'
+            keywords['area'] = 'dontcare'
             return keywords
         if cur_state == '4_AskPriceRange':
-            keywords['pricerange'] = 'X'
+            keywords['pricerange'] = 'dontcare'
             return keywords
         if cur_state == '5_AskFoodType':
-            keywords['food'] = 'X'
+            keywords['food'] = 'dontcare'
             return keywords
 
     regex_patterns = {
@@ -78,7 +78,7 @@ def keyword_matching(utterance, cur_state):
             # They if basically means that closest_term is not None
             if closest_term:
                 if closest_term == 'any':
-                    closest_term = 'X'
+                    closest_term = 'dontcare'
                 keywords[pref_type] = closest_term
 
     else:
@@ -97,11 +97,11 @@ def keyword_matching(utterance, cur_state):
                         third_group = match.group(3)
                     if first_group == "any":
                         if second_group in {"food", "restaurant", "place", "restaurantin", "type"}:
-                            keywords['food'] = "X"
+                            keywords['food'] = "dontcare"
                         elif second_group in {"priced", "price"}:
-                            keywords['pricerange'] = "X"
+                            keywords['pricerange'] = "dontcare"
                         elif second_group in {"part", "area"}:
-                            keywords['area'] = "X"
+                            keywords['area'] = "dontcare"
 
                     elif third_group:
                         closest_term = Leven_distance.levenshtein_distance_regex(third_group, pref_type,
@@ -133,14 +133,14 @@ def check_misspelling_or_preferences(cur_utterance, cur_state):
     # If yes we will raise the misspelling flag
     for keyword_type, keyword in keywords.items():
 
-        if keyword is not None and keyword != 'X':
+        if keyword is not None and keyword != 'dontcare':
             preferences, misspelling = Leven_distance.levenshtein_distance(keyword, keyword_type, preferences,
                                                                            domain_terms_dict, levenshtein_dis)
             if len(misspelling) > 0:
                 return misspelling
 
-        if keyword == 'X':
-            preferences[keyword_type] = 'X'
+        if keyword == 'dontcare':
+            preferences[keyword_type] = 'dontcare'
 
     return preferences
 

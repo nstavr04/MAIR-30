@@ -224,7 +224,7 @@ def main():
         current_state = state_transition_function(current_state, predicted_label, utterance)
         
         # Used for debugging purposes
-        print(predicted_label, " | ", utterance, '(', preferenceField['area'], ' ',preferenceField['pricerange'], ' ',preferenceField['food'], ')')
+        # print(predicted_label, " | ", utterance, '(', preferenceField['area'], ' ',preferenceField['pricerange'], ' ',preferenceField['food'], ')')
 
         if current_state == '2_AskCorrection' or current_state == '7_AskCorrection': # This case is handled inside of state_transition_function
             continue

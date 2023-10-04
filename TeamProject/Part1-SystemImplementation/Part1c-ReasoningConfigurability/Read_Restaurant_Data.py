@@ -9,11 +9,11 @@ import random
 def find_restaurants(preferenceField, path='restaurant_info_extended.csv'):
     restaurants = pd.read_csv('restaurant_info_extended.csv',sep=';')
 
-    if preferenceField['area'] != 'X' and preferenceField['area'] is not None:
+    if preferenceField['area'] != 'dontcare' and preferenceField['area'] is not None:
         restaurants = restaurants[restaurants['area'] == preferenceField['area']]
-    if preferenceField['pricerange'] != 'X' and preferenceField['pricerange'] is not None:
+    if preferenceField['pricerange'] != 'dontcare' and preferenceField['pricerange'] is not None:
         restaurants = restaurants[restaurants['pricerange'] == preferenceField['pricerange']]
-    if preferenceField['food'] != 'X' and preferenceField['food'] is not None:
+    if preferenceField['food'] != 'dontcare' and preferenceField['food'] is not None:
         restaurants = restaurants[restaurants['food'] == preferenceField['food']]
 
     return restaurants.values
