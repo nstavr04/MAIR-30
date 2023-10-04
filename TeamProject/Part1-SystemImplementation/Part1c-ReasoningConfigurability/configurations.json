@@ -1,1 +1,8 @@
-{"dialog_restart_on": true, "ASR_on": false, "caps_on": false, "levenshtein_dis": 3, "delay_on": false, "random_preference_order_on": false}
+{
+  "dialog_restart_on": true,
+  "ASR_on": false,
+  "caps_on": false,
+  "levenshtein_dis": 3,
+  "delay_on": true,
+  "random_preference_order_on": false
+}

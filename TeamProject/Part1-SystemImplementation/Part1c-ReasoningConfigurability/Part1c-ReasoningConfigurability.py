@@ -15,15 +15,6 @@ from Input_Output_Functions import set_configurations
 from Analyze_Utterance import check_misspelling_or_preferences
 from Analyze_Utterance import identify_details
 
-# Load our configurations
-with open("configurations.json", "r") as f:
-    configurations = json.load(f)
-
-dialog_restart_on = configurations['dialog_restart_on']
-caps_on = configurations['caps_on']
-random_preference_order_on = configurations['random_preference_order_on']
-
-
 # Used to store the preferences of the user
 preferenceField = {
     'area': None,
@@ -38,7 +29,13 @@ optionalPreferences = {
     'romantic':None
 }
 
+# Load our configurations
+with open("configurations.json", "r") as f:
+    configurations = json.load(f)
 
+dialog_restart_on = configurations['dialog_restart_on']
+caps_on = configurations['caps_on']
+random_preference_order_on = configurations['random_preference_order_on']
 
 # State transistion function to change the state
 # @cur_state: int, the current state
@@ -128,7 +125,6 @@ def checkPreferences():
     
     return 9
 
-
 # Function to train the machine learning model
 def train_ml_model():
     df = pd.read_csv('dialog_acts.dat', names=['data'])
@@ -150,10 +146,9 @@ def train_ml_model():
 
     return vectorizer, clf
 
-
-
-
 def update_preferences(preferences, current_state):
+    global preferenceField
+
     for key in ['area','pricerange','food']:
         if preferences[key] is not None:
             if preferenceField[key] is None:
@@ -172,9 +167,6 @@ def update_preferences(preferences, current_state):
         elif preferenceField[key] is None and not random_preference_order_on:
             return
 
-
-
-
 def reset_conversation():
     preferenceField['area'] = None
     preferenceField['pricerange'] = None
@@ -183,8 +175,6 @@ def reset_conversation():
     optionalPreferences['children'] = None
     optionalPreferences['touristic'] = None
     optionalPreferences['assigned_seats'] = None
-
-
 
 def main():
 
@@ -219,13 +209,11 @@ def main():
             current_restaurant = None
             current_state = 1   
             restart_flag = False
-            #print message after current_state is reset
+            # Print message after current_state is reset
             print_system_message(current_state,preferenceField=preferenceField,optionalPreferences=optionalPreferences)
 
         if current_state == 12:
             break
-    
-        #print("Current state: ", current_state)
 
         predicted_label, utterance = prompt_input(vectorizer, clf)
 
@@ -235,9 +223,10 @@ def main():
 
         current_state = state_transition_function(current_state, predicted_label, utterance)
         
-        #print(predicted_label, " | ", utterance, '(', preferenceField['area'], ' ',preferenceField['pricerange'], ' ',preferenceField['food'], ')')
+        # Used for debugging purposes
+        print(predicted_label, " | ", utterance, '(', preferenceField['area'], ' ',preferenceField['pricerange'], ' ',preferenceField['food'], ')')
 
-        if current_state == 2 or current_state == 7: #this case is handled inside of state_transition_function
+        if current_state == 2 or current_state == 7: # This case is handled inside of state_transition_function
             continue
         # If we want to suggest a restaurant, we have to find one
         if current_state == 10:

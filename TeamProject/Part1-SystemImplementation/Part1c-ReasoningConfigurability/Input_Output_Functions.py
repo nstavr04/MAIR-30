@@ -1,4 +1,4 @@
-#This function contains functions to handle Speech-Input and the outputs of the system in the CLI
+# This function contains functions to handle Speech-Input and the outputs of the system in the CLI
 
 import ASR_userUtterance
 import json
@@ -12,8 +12,6 @@ dialog_restart_on = configurations['dialog_restart_on']
 ASR_on = configurations['ASR_on']
 caps_on = configurations['caps_on']
 delay_on = configurations['delay_on']
-
-
 
 # Function to handle system outputs
 # @paramters
@@ -67,7 +65,6 @@ def print_system_message(current_state,preferenceField,optionalPreferences, miss
             pricerange = restaurant[1] if restaurant[1] != '' else ""
             food = f" serving {restaurant[3]} food" if restaurant[3] != '' else ""
             out = f"{name} is a nice {pricerange} restaurant{area}{food}."
-            #print(optionalPreferences)
             touristic = ""
             assigned_seats = ""
             children = ""
@@ -94,7 +91,6 @@ def print_system_message(current_state,preferenceField,optionalPreferences, miss
             out = f'Sure{phone}{addr}{postcode}.'
             if detail == 'unknown':
                 out = f"Please specify whether you want the phone number, the address, or the postcode."
-
 
         case 12:
             out = 'Goodbye. Have a nice day!'
@@ -129,7 +125,7 @@ def prompt_input(vectorizer, clf):
 
     return predicted_label, utterance
 
-#Function to set the configuration from the CLI
+# Function to set the configuration from the CLI
 def set_configurations():
     with open("configurations.json", "r") as f:
         configurations = json.load(f)
@@ -207,7 +203,6 @@ def set_configurations():
                         else:
                             utterance = None
             utterance = None
-
 
             while utterance is None:
                     utterance = input("Type 'yes' to activate a delay before dialog system outputs and 'no' to deactivate: ").lower()
