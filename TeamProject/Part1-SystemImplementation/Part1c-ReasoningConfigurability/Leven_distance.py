@@ -12,15 +12,12 @@ def levenshtein_distance_single(keyword, domain_terms_dict, levenshtein_dis):
     for keyword_type in domain_terms_dict.keys():
         for term in domain_terms_dict[keyword_type]:
             distance = Levenshtein.distance(keyword, term)
-            # if keyword_type == 'food':
-            #     print(term, ' ', distance)
             if distance < min_distance:
                 min_distance = distance
                 closest_terms = [term]
             elif distance == min_distance:
                 closest_terms.append(term)
     
-        # print(closest_terms, min_distance)
         if min_distance <= levenshtein_dis:
             return random.choice(closest_terms), keyword_type
         

@@ -1,4 +1,4 @@
-#This document contains additional functions to find suitable restaurants fitting the preferences of the user
+# This document contains additional functions to find suitable restaurants fitting the preferences of the user
 
 import pandas as pd
 import random

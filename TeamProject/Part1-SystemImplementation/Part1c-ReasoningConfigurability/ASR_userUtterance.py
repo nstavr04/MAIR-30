@@ -1,4 +1,4 @@
-#This file contains function to handle the Speech Regocnition
+# This file contains function to handle the Speech Regocnition
 
 import pyaudio
 import wave

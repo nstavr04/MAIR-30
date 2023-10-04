@@ -1,5 +1,4 @@
-#This document contains additional functions to analyze an utterance for preferences, misspellings, or other information.
-
+# This document contains additional functions to analyze an utterance for preferences, misspellings, or other information.
 
 import re
 import string
@@ -20,8 +19,7 @@ domain_terms_dict = {
              'vietnamese', 'swedish', 'russian', 'welsh', 'austrian', 'belgian', 'brazilian']
 }
 
-#Load Levenshtein distance configuration
-# Load our configurations
+# Load Levenshtein distance configuration
 with open("configurations.json", "r") as f:
     configurations = json.load(f)
 
@@ -120,7 +118,6 @@ def keyword_matching(utterance, cur_state):
 
     return keywords
 
-
 # The function returns either a dictionary with the preferences or a string with the misspelled word
 def check_misspelling_or_preferences(cur_utterance, cur_state):
     # Used as a temporary storage for the preferences before assigning them to the preferenceField
@@ -146,7 +143,6 @@ def check_misspelling_or_preferences(cur_utterance, cur_state):
             preferences[keyword_type] = 'X'
 
     return preferences
-
 
 def identify_details(current_state, utterance):
     detail = ''
