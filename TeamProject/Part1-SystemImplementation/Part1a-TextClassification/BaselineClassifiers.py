@@ -1,3 +1,5 @@
+#This document contains additional functions for using the baseline models
+
 from sklearn.metrics import classification_report
 ####################### Baseline majority class (inform label) #######################
 # Identify the majority class (idk if its needed)

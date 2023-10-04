@@ -1,3 +1,5 @@
+#This file contains function to handle the Speech Regocnition
+
 import pyaudio
 import wave
 import speech_recognition as sr
