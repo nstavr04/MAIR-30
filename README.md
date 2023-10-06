@@ -3,11 +3,7 @@
 This is the repository for the Restaurant Recommendation System project for the 'Methods in AI' course at UU.
 
 **Team members:**
-MILO TREANOR
-LINUS ERREN
-ROEMER SCHWAANHUYSER
-NIKOLAS STAVROU
-RENATE BUREMA 
+MILO TREANOR, LINUS ERREN, ROEMER SCHWAANHUYSER, NIKOLAS STAVROU, RENATE BUREMA 
 
 ## Getting Started
 
