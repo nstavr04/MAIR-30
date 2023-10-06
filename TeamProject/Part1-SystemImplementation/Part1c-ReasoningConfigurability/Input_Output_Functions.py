@@ -40,9 +40,21 @@ def print_system_message(current_state,preferenceField,optionalPreferences, miss
             out = "What kind of food would you like?"
 
         case '6_NoRestaurantExists':
-            area = f" in the {preferenceField['area']} part of the town" if preferenceField['area'] is not None else ""
-            pricerange = preferenceField['pricerange'] if preferenceField['pricerange'] is not None else ""
-            food = f" serving {preferenceField['food']} food" if preferenceField['food'] is not None else ""
+            area = (
+            f" in {preferenceField['area']} part of the town" if preferenceField['area'] not in [None, 'dontcare']
+            else " in any part of the town" if preferenceField['area'] == 'dontcare'
+            else ""
+            )
+            pricerange = (
+            preferenceField['pricerange'] if preferenceField['pricerange'] not in [None, 'dontcare'] 
+            else 'any priced range' if preferenceField['pricerange'] == 'dontcare' 
+            else ""
+            )
+            food = (
+            f" serving {preferenceField['food']} food" if preferenceField['food'] not in [None, 'dontcare']
+            else " serving any food" if preferenceField['food'] == 'dontcare'
+            else ""
+            )
             out = f"Sorry, but there is no {pricerange} restaurant{area}{food}."
 
         case '7_AskCorrection':
