@@ -3,6 +3,7 @@
 import pandas as pd
 import random
 
+
 # Lookup function to find restaurants fitting the criteria in the .csv file
 # Attributes should be provided as string
 # @return is a numpy array
@@ -21,20 +22,11 @@ def find_restaurants(preferenceField, path='restaurant_info_extended.csv'):
 # Lookup function to filter restaurants fitting the additional requirements
 # Restaurants is a numpy array, requirements should be provided as boolean
 # @return is a numpy array
-def filter_restaurants_opt_requirements(restaurants, optionalPreferences):
-
-    if optionalPreferences['touristic']:
-        restaurants = restaurants[restaurants[:,1] == 'cheap']
-        restaurants = restaurants[restaurants[:,7] == 'good']
-        restaurants = restaurants[restaurants[:,3] != 'romanian']
-    if optionalPreferences['assigned_seats']:
-        restaurants = restaurants[restaurants[:,8] == 'busy']
-    if optionalPreferences['children']:
-        restaurants = restaurants[restaurants[:,9] != 'long stay']
-    if optionalPreferences['romantic']:
-        restaurants = restaurants[restaurants[:,8] != 'busy']
-        restaurants = restaurants[restaurants[:,9] == 'long stay']
-
+def filter_restaurants_opt_requirements(restaurants, optionalPreferences, reasoning_rules):
+    for key in optionalPreferences:
+        if optionalPreferences[key]:
+            for column,value,condition in reasoning_rules[key]:
+                restaurants = restaurants[(restaurants[:,column] == value) == condition]
     return restaurants
 
 # Function to randomly choose a restaurant

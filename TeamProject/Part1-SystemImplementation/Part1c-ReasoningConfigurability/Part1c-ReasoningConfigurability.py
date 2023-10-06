@@ -5,9 +5,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.linear_model import LogisticRegression
 
-from Read_Restaurant_Data import find_restaurants
-from Read_Restaurant_Data import filter_restaurants_opt_requirements
-from Read_Restaurant_Data import choose_restaurant
+from Filter_Restaurants import find_restaurants
+from Filter_Restaurants import filter_restaurants_opt_requirements
+from Filter_Restaurants import choose_restaurant
 
 from Input_Output_Functions import print_system_message
 from Input_Output_Functions import prompt_input
@@ -28,6 +28,16 @@ optionalPreferences = {
     'children':None,
     'romantic':None
 }
+
+#dictonary containing the reasing rule
+#Each attribute has a set of rules. If each rules is met by a restaurant it has that attribute
+reasoning_rules = {
+    'touristic' : [[1,'cheap',True],[7,'good',True],[3,'romanian',False]],
+    'assigned_seats' : [[8,'busy',True]],
+    'children' : [[9,'long_stay',False]],
+    'romantic' : [[8,'busy',False],[9,'long_stay',True]]
+}
+
 
 # Load our configurations
 with open("configurations.json", "r") as f:
@@ -80,7 +90,7 @@ def state_transition_function(cur_state, cur_dialog_act, cur_utterance):
         case '9_AskAdditionalRequirements':
             update_opt_requirements(cur_utterance)
             restaurants = find_restaurants(preferenceField)
-            restaurants = filter_restaurants_opt_requirements(restaurants, optionalPreferences)
+            restaurants = filter_restaurants_opt_requirements(restaurants, optionalPreferences, reasoning_rules)
             if len(restaurants) > 0:
                 return '10_SuggestRestaurants'
             return '9_AskAdditionalRequirements'
@@ -233,7 +243,7 @@ def main():
             # If candidate restaurants not computed yet, find them now
             if len(candidate_restaurants) == 0:
                 candidate_restaurants = find_restaurants(preferenceField)
-                candidate_restaurants = filter_restaurants_opt_requirements(candidate_restaurants, optionalPreferences)
+                candidate_restaurants = filter_restaurants_opt_requirements(candidate_restaurants, optionalPreferences, reasoning_rules)
             # If not all candidate_restaurants were suggested, choose new restaurant to suggest
             if len(candidate_restaurants) > len(suggested_restaurants) or suggested_restaurants[0][0] is None:
                 current_restaurant = choose_restaurant(candidate_restaurants, np.array(suggested_restaurants))
