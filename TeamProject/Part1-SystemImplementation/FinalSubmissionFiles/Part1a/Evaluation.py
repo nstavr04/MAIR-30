@@ -2,12 +2,15 @@
 
 from Baseline_Classifiers import baseline_predict
 from Baseline_Classifiers import baseline_majority_predict
-from ML_Classifiers import get_decision_tree_classifier
-from ML_Classifiers import get_logistic_regression_classifier
+from ML_Classifiers import DecisionTreeModel
+from ML_Classifiers import LogisticRegressionModel
 
 import numpy as np
 
 from Data_Preparation import get_data
+
+DecisionTree = DecisionTreeModel()
+LogisticRegression = LogisticRegressionModel()
 
 x_data_dup,y_data_dup,x_deduplicated,y_deduplicated = get_data(shuffel=True)
 x_data_dup = x_data_dup.values
@@ -42,9 +45,9 @@ def find_difficult_instances(dublicates= False):
 
         y_bl_maj = baseline_majority_predict(x_test)
         y_bl_rules = baseline_predict(x_test)
-        dt, vec_dt = get_decision_tree_classifier(x_train,y_train)
+        dt, vec_dt = DecisionTree.get_classifier(x_train,y_train)
         y_dt = dt.predict(vec_dt.transform(x_test))
-        lr, vec_dt = get_logistic_regression_classifier(x_train,y_train)
+        lr, vec_dt = LogisticRegression.get_classifier(x_train,y_train)
         y_lr = lr.predict(vec_dt.transform(x_test))
         for k,target in enumerate(y_test):
             if target != y_bl_rules[k] and (target != y_dt[k] and target != y_lr[k]):

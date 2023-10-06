@@ -5,12 +5,12 @@ from Data_Preparation import get_data
 from Baseline_Classifiers import baseline_majority
 from Baseline_Classifiers import baseline_keyword
 from Baseline_Classifiers import baseline_prompt
-from ML_Classifiers import ml_decision_tree_classifier
-from ML_Classifiers import ml_decision_tree_classifier_prompt
-from ML_Classifiers import ml_logistic_regression_classifier
-from ML_Classifiers import ml_logistic_regression_classifier_prompt
+from ML_Classifiers import DecisionTreeModel
+from ML_Classifiers import LogisticRegressionModel
 
-
+# Instantiate the ML models
+DecisionTree = DecisionTreeModel()
+LogisticRegression = LogisticRegressionModel()
 
 ################################### Dataset ##########################################
 
@@ -44,35 +44,35 @@ def print_system_output(choice):
     elif choice == '3':
         baseline_prompt()
     elif choice == '4':
-        ml_decision_tree_classifier_accuracy_dups, c_report = ml_decision_tree_classifier(x_train, y_train, x_test,
+        ml_decision_tree_classifier_accuracy_dups, c_report = DecisionTree.ml_classifier(x_train, y_train, x_test,
                                                                                           y_test)
         print(
             f"Machine Learing Decision Tree Classifier accuracy (with Duplicates): {ml_decision_tree_classifier_accuracy_dups:.2f}%")
 
-        ml_decision_tree_classifier_prompt(x_train, y_train)
+        DecisionTree.prompt_classifier(x_train, y_train)
     elif choice == '5':
-        ml_decision_tree_classifier_accuracy_nodups, c_report = ml_decision_tree_classifier(x_train_unique_np,
+        ml_decision_tree_classifier_accuracy_nodups, c_report = DecisionTree.ml_classifier(x_train_unique_np,
                                                                                             y_train_unique_np,
                                                                                             x_test_unique_np,
                                                                                             y_test_unique_np)
         print(
             f"Machine Learing Decision Tree Classifier accuracy (without Duplicates): {ml_decision_tree_classifier_accuracy_nodups:.2f}%")
 
-        ml_decision_tree_classifier_prompt(x_train_unique_np, y_train_unique_np)
+        DecisionTree.prompt_classifier(x_train_unique_np, y_train_unique_np)
     elif choice == '6':
-        ml_logistic_regression_classifier_accuracy_dups, c_report = ml_logistic_regression_classifier(x_train, y_train,
+        ml_logistic_regression_classifier_accuracy_dups, c_report = LogisticRegression.ml_classifier(x_train, y_train,
                                                                                                       x_test, y_test)
         print(
             f"Machine Learing Logistic Regression Classifier accuracy (with Duplicates): {ml_logistic_regression_classifier_accuracy_dups:.2f}%")
 
-        ml_logistic_regression_classifier_prompt(x_train, y_train)
+        LogisticRegression.prompt_classifier(x_train, y_train)
     elif choice == '7':
-        ml_logistic_regression_classifier_accuracy_nodups, c_report = ml_logistic_regression_classifier(
+        ml_logistic_regression_classifier_accuracy_nodups, c_report = LogisticRegression.ml_classifier(
             x_train_unique_np, y_train_unique_np, x_test_unique_np, y_test_unique_np)
         print(
             f"Machine Learing Logistic Regression Classifier accuracy (without Duplicates): {ml_logistic_regression_classifier_accuracy_nodups:.2f}%")
 
-        ml_logistic_regression_classifier_prompt(x_train_unique_np, y_train_unique_np)
+        LogisticRegression.prompt_classifier(x_train_unique_np, y_train_unique_np)
     elif choice == '8':
         baseline_majority_accuracy, c_report1 = baseline_majority(y_test)
         print(f"Baseline majority accuracy: {baseline_majority_accuracy:.2f}%")
@@ -80,24 +80,24 @@ def print_system_output(choice):
         baseline_keyword_accuracy, c_report2 = baseline_keyword(x_test, y_test)
         print(f"Baseline keyword accuracy: {baseline_keyword_accuracy:.2f}%")
         print(c_report2)
-        ml_decision_tree_classifier_accuracy_dups, c_report3 = ml_decision_tree_classifier(x_train, y_train, x_test,
+        ml_decision_tree_classifier_accuracy_dups, c_report3 = DecisionTree.ml_classifier(x_train, y_train, x_test,
                                                                                            y_test)
         print(
             f"Machine Learing Decision Tree Classifier accuracy (with Duplicates): {ml_decision_tree_classifier_accuracy_dups:.2f}%")
         print(c_report3)
-        ml_decision_tree_classifier_accuracy_nodups, c_report4 = ml_decision_tree_classifier(x_train_unique_np,
+        ml_decision_tree_classifier_accuracy_nodups, c_report4 = DecisionTree.ml_classifier(x_train_unique_np,
                                                                                              y_train_unique_np,
                                                                                              x_test_unique_np,
                                                                                              y_test_unique_np)
         print(
             f"Machine Learing Decision Tree Classifier accuracy (without Duplicates): {ml_decision_tree_classifier_accuracy_nodups:.2f}%")
         print(c_report4)
-        ml_logistic_regression_classifier_accuracy_dups, c_report5 = ml_logistic_regression_classifier(x_train, y_train,
+        ml_logistic_regression_classifier_accuracy_dups, c_report5 = LogisticRegression.ml_classifier(x_train, y_train,
                                                                                                        x_test, y_test)
         print(
             f"Machine Learing Logistic Regression Classifier accuracy (with Duplicates): {ml_logistic_regression_classifier_accuracy_dups:.2f}%")
         print(c_report5)
-        ml_logistic_regression_classifier_accuracy_nodups, c_report6 = ml_logistic_regression_classifier(
+        ml_logistic_regression_classifier_accuracy_nodups, c_report6 = LogisticRegression.ml_classifier(
             x_train_unique_np, y_train_unique_np, x_test_unique_np, y_test_unique_np)
         print(
             f"Machine Learing Logistic Regression Classifier accuracy (without Duplicates): {ml_logistic_regression_classifier_accuracy_nodups:.2f}%")
@@ -121,16 +121,17 @@ def print_menu():
     print("0. Exit")
 
 def main_menu():
+
     while True:
-        #print possible options
+        # Print possible options
         print_menu()
 
         choice = input("Enter your choice: ")
 
-        #print system output to user request
+        # Print system output to user request
         print_system_output(choice)
 
-        #user wants to leave
+        # User wants to leave
         if choice == 0:
             break
 
