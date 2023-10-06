@@ -1,4 +1,4 @@
-#This document contains an additional function to prepare the data user for training the models
+# This file contains an additional function to prepare the data user for training the models
 
 import pandas as pd
 

@@ -3,6 +3,7 @@
 import pandas as pd
 import random
 
+
 # Lookup function to find restaurants fitting the criteria in the .csv file
 # Attributes should be provided as string
 # @return is a numpy array

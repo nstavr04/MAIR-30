@@ -1,9 +1,0 @@
-inform im looking for a moderately priced restaurant that serves
-inform any part of town
-inform bistro food
-confirm is there a moderately priced restaurant that serves british food
-affirm yes
-request yes
-request could i get their phone number
-null code
-request code

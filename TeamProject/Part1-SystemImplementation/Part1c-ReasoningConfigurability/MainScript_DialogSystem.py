@@ -29,15 +29,14 @@ optionalPreferences = {
     'romantic':None
 }
 
-#dictonary containing the reasing rule
-#Each attribute has a set of rules. If each rules is met by a restaurant it has that attribute
+# Dictonary containing the reasing rule
+# Each attribute has a set of rules. If each rules is met by a restaurant it has that attribute
 reasoning_rules = {
     'touristic' : [[1,'cheap',True],[7,'good',True],[3,'romanian',False]],
     'assigned_seats' : [[8,'busy',True]],
     'children' : [[9,'long_stay',False]],
     'romantic' : [[8,'busy',False],[9,'long_stay',True]]
 }
-
 
 # Load our configurations
 with open("configurations.json", "r") as f:
@@ -234,7 +233,8 @@ def main():
         current_state = state_transition_function(current_state, predicted_label, utterance)
         
         # Used for debugging purposes
-        # print("For debugging purposes: ", predicted_label, " | ", utterance, '(', preferenceField['area'], ' ',preferenceField['pricerange'], ' ',preferenceField['food'], ')')
+        if configurations['debugging_on']:
+            print("For debugging purposes: ", "Predicted Dialog Act: ", predicted_label, " | Utterance: ", utterance, '( Area: ', preferenceField['area'], ' PriceRange: ',preferenceField['pricerange'], ' Food: ',preferenceField['food'], ')')
 
         if current_state == '2_AskCorrection' or current_state == '7_AskCorrection': # This case is handled inside of state_transition_function
             continue

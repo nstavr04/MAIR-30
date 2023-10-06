@@ -1,10 +1,10 @@
 from sklearn.model_selection import train_test_split
-from DataPreparation import get_data
+from Data_Preparation import get_data
 
 
-from BaselineClassifiers import baseline_majority
-from BaselineClassifiers import baseline_keyword
-from BaselineClassifiers import baseline_prompt
+from Baseline_Classifiers import baseline_majority
+from Baseline_Classifiers import baseline_keyword
+from Baseline_Classifiers import baseline_prompt
 from ML_Classifiers import ml_decision_tree_classifier
 from ML_Classifiers import ml_decision_tree_classifier_prompt
 from ML_Classifiers import ml_logistic_regression_classifier
@@ -33,7 +33,7 @@ y_train_unique_np = y_train_unique.values
 x_test_unique_np = x_test_unique.values
 y_test_unique_np = y_test_unique.values
 
-#function to print the system output with respect to the choice of the user
+# Function to print the system output with respect to the choice of the user
 def print_system_output(choice):
     if choice == '1':
         baseline_majority_accuracy, c_report = baseline_majority(y_test)
@@ -107,7 +107,7 @@ def print_system_output(choice):
     else:
         print("Invalid choice. Please try again.")
 
-#function to print the menu of the application
+# Function to print the menu of the application
 def print_menu():
     print("\nChoose an option:")
     print("1. Run Baseline Majority Class")
