@@ -50,7 +50,7 @@ def keyword_matching(utterance, cur_state):
 
     regex_patterns = {
         'food': re.compile(r'\b(\w+)\s+(food|restaurant|place|restaurantin|type)\b'),
-        'pricerange': re.compile(r'\b(\w+)\s+(priced|price)\b'),
+        'pricerange': re.compile(r'\b(\w+)\s+(price|priced)\b'),
         'area': re.compile(r'\b(\w+)\s+(part|area)|in\s+the\s+(\w+)\b'),
     }
 
@@ -67,7 +67,7 @@ def keyword_matching(utterance, cur_state):
                     keywords[pref_type] = token
 
     # List of words to ignore that have a <=3 levenshtein distance to a preference
-    ignore_words = {'a', 'the', 'in', 'cheap', 'hi', 'hey', 'play', 'thanks'}
+    ignore_words = {'a', 'the', 'in', 'cheap', 'hi', 'hey', 'play', 'thanks', 'priced','expensive', 'moderate'}
 
     # User only provided one word
     if len(tokens) == 1:
